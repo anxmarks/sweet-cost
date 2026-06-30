@@ -1,56 +1,38 @@
-# Welcome to your Expo app 👋
+# Sweet-Cost 🧁
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile para confeitarias calcularem o custo e o preço de venda de seus produtos, com controle de estoque e cadastro de receitas.
 
-## Get started
+## Funcionalidades
 
-1. Install dependencies
+- **Dispensa**: cadastro de ingredientes/produtos com valor, data de compra e data de validade. Alertas de produtos próximos do vencimento.
+- **Receitas**: cadastro de receitas com medidas, vinculadas aos produtos da dispensa.
+- **Calculadora de custo**: cálculo automático do custo de uma receita com base nos produtos usados, com aplicação de margem de lucro definida pelo usuário.
 
-   ```bash
-   npm install
-   ```
+## Stack
 
-2. Start the app
+- [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)
+- [Expo Router](https://docs.expo.dev/router/introduction/) (navegação baseada em arquivos)
+- TypeScript
+- SQLite (`expo-sqlite`) para persistência local
+- `expo-notifications` para alertas de validade (fase futura)
 
-   ```bash
-   npx expo start
-   ```
+## Estrutura do projeto
 
-In the output, you'll find options to open the app in a
+Veja [docs/ESTRUTURA.md](./docs/ESTRUTURA.md) para o detalhamento das pastas.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Como rodar o projeto
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Veja o passo a passo completo em [docs/ENVIRONMENT_SETUP.md](./docs/ENVIRONMENT_SETUP.md).
 
-## Get a fresh project
-
-When you're ready, run:
+Resumo rápido:
 
 ```bash
-npm run reset-project
+git clone <url-do-repo>
+cd confeitaria-app
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Status do projeto
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+🚧 Em desenvolvimento inicial.
