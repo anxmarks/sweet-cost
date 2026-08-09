@@ -3,6 +3,9 @@ import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
+import { initDatabase } from '@/database/db';
+
+initDatabase();
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
