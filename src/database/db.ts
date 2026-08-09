@@ -2,6 +2,17 @@ import { openDatabaseSync } from "expo-sqlite";
 
 export const db = openDatabaseSync("sweetcost.db");
 
+function colunaExiste(tabela: string, coluna: string): boolean {
+  const colunas = db.getAllSync<{ name: string }>(`PRAGMA table_info(${tabela});`);
+  return colunas.some((c) => c.name === coluna);
+}
+
+function migrarAdicionarMarcaEmProdutos() {
+  if (!colunaExiste("produtos", "marca")) {
+    db.execSync("ALTER TABLE produtos ADD COLUMN marca TEXT;");
+  }
+}
+
 export function initDatabase() {
   db.execSync("PRAGMA foreign_keys = ON;");
 
@@ -9,6 +20,7 @@ export function initDatabase() {
     CREATE TABLE IF NOT EXISTS produtos (
       id              INTEGER PRIMARY KEY AUTOINCREMENT,
       nome            TEXT    NOT NULL,
+      marca           TEXT,
       valor_pago      REAL    NOT NULL,
       quantidade      REAL    NOT NULL,
       unidade         TEXT    NOT NULL,
@@ -17,6 +29,8 @@ export function initDatabase() {
       criado_em       TEXT    NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  migrarAdicionarMarcaEmProdutos();
 
   db.execSync(`
     CREATE TABLE IF NOT EXISTS receitas (

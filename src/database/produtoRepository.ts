@@ -3,10 +3,11 @@ import { db } from "./db";
 
 export function inserirProduto(produto: Omit<Produto, "id" | "criado_em">): number {
     const resultado = db.runSync(
-        `INSERT INTO produtos (nome, valor_pago, quantidade, unidade, data_compra, data_validade)
-     VALUES ($nome, $valor_pago, $quantidade, $unidade, $data_compra, $data_validade)`,
+        `INSERT INTO produtos (nome, marca, valor_pago, quantidade, unidade, data_compra, data_validade)
+     VALUES ($nome, $marca, $valor_pago, $quantidade, $unidade, $data_compra, $data_validade)`,
      {
         $nome: produto.nome,
+        $marca: produto.marca,
         $valor_pago: produto.valor_pago,
         $quantidade: produto.quantidade,
         $unidade: produto.unidade,
@@ -32,6 +33,7 @@ export function atualizarProduto(id: number, produto: Omit<Produto, "id" | "cria
   db.runSync(
     `UPDATE produtos
      SET nome = $nome,
+         marca = $marca,
          valor_pago = $valor_pago,
          quantidade = $quantidade,
          unidade = $unidade,
@@ -40,6 +42,7 @@ export function atualizarProduto(id: number, produto: Omit<Produto, "id" | "cria
      WHERE id = $id`,
     {
       $nome: produto.nome,
+      $marca: produto.marca,
       $valor_pago: produto.valor_pago,
       $quantidade: produto.quantidade,
       $unidade: produto.unidade,

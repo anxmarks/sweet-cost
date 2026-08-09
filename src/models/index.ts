@@ -1,8 +1,18 @@
-export type Unidade = "g" | "kg" | "ml" | "l" | "un";
+export type Unidade =
+  | "g"
+  | "kg"
+  | "ml"
+  | "l"
+  | "un"
+  | "xicara"
+  | "copo"
+  | "colher_sopa"
+  | "colher_cha";
 
 export interface Produto {
   id: number;
   nome: string;
+  marca: string | null;
   valor_pago: number;
   quantidade: number;
   unidade: Unidade;
