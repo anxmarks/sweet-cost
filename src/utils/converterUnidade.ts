@@ -37,6 +37,11 @@ export function unidadesSaoCompativeis(unidadeA: Unidade, unidadeB: Unidade): bo
   return GRUPOS[unidadeA] === GRUPOS[unidadeB];
 }
 
+export function listarUnidadesCompativeis(unidade: Unidade): Unidade[] {
+  const grupo = GRUPOS[unidade];
+  return (Object.keys(GRUPOS) as Unidade[]).filter((candidata) => GRUPOS[candidata] === grupo);
+}
+
 export function validarCompatibilidade(unidadeA: Unidade, unidadeB: Unidade): void {
   // se unidadesSaoCompativeis retornar false, lance um Error explicando a incompatibilidade
   // (essa é a função que o calculoCusto.ts vai chamar antes de converter)
