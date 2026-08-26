@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SeletorUnidade } from '@/components/seletor-unidade';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -10,6 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { listarProdutos } from '@/database/produtoRepository';
 import { inserirIngredienteReceita, inserirReceita } from '@/database/receitaRepository';
 import { Produto, Unidade } from '@/models';
+import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
 
 type IngredienteForm = {
   produtoId: number;
@@ -77,6 +79,14 @@ export default function NovaReceitaScreen() {
     setIngredientes((atual) =>
       atual.map((ingrediente) =>
         ingrediente.produtoId === produtoId ? { ...ingrediente, quantidadeUsada: valor } : ingrediente
+      )
+    );
+  }
+
+  function atualizarUnidade(produtoId: number, unidade: Unidade) {
+    setIngredientes((atual) =>
+      atual.map((ingrediente) =>
+        ingrediente.produtoId === produtoId ? { ...ingrediente, unidadeUsada: unidade } : ingrediente
       )
     );
   }
@@ -278,15 +288,22 @@ export default function NovaReceitaScreen() {
                       </ThemedText>
 
                       {editandoQuantidades ? (
-                        <TextInput
-                          value={ingrediente.quantidadeUsada}
-                          onChangeText={(valor) => atualizarQuantidade(ingrediente.produtoId, valor)}
-                          keyboardType="decimal-pad"
-                          style={[
-                            styles.inputQuantidade,
-                            { color: theme.text, backgroundColor: theme.backgroundElement },
-                          ]}
-                        />
+                        <>
+                          <TextInput
+                            value={ingrediente.quantidadeUsada}
+                            onChangeText={(valor) => atualizarQuantidade(ingrediente.produtoId, valor)}
+                            keyboardType="decimal-pad"
+                            style={[
+                              styles.inputQuantidade,
+                              { color: theme.text, backgroundColor: theme.backgroundElement },
+                            ]}
+                          />
+                          <SeletorUnidade
+                            value={ingrediente.unidadeUsada}
+                            unidadesDisponiveis={listarUnidadesCompativeis(produto.unidade)}
+                            onSelecionar={(unidade) => atualizarUnidade(ingrediente.produtoId, unidade)}
+                          />
+                        </>
                       ) : (
                         <ThemedText type="small" themeColor="textSecondary">
                           {ingrediente.quantidadeUsada} {ingrediente.unidadeUsada}
