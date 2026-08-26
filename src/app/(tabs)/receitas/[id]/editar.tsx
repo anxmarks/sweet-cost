@@ -171,7 +171,7 @@ export default function EditarReceitaScreen() {
         style: 'destructive',
         onPress: () => {
           excluirReceita(receitaId);
-          router.back();
+          router.navigate('/receitas');
         },
       },
     ]);
