@@ -124,7 +124,7 @@ export default function EditarProdutoScreen() {
               onChangeText={setNome}
               placeholder="Ex: Farinha de Trigo"
               placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
@@ -135,7 +135,7 @@ export default function EditarProdutoScreen() {
               onChangeText={setMarca}
               placeholder="Ex: Dona Benta"
               placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
@@ -148,7 +148,7 @@ export default function EditarProdutoScreen() {
                 placeholder="0,00"
                 placeholderTextColor={theme.textSecondary}
                 keyboardType="decimal-pad"
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
               />
             </View>
             <View style={[styles.field, styles.flex1]}>
@@ -159,7 +159,7 @@ export default function EditarProdutoScreen() {
                 placeholder="0"
                 placeholderTextColor={theme.textSecondary}
                 keyboardType="decimal-pad"
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
               />
             </View>
           </View>
@@ -190,7 +190,11 @@ export default function EditarProdutoScreen() {
             </View>
           </View>
 
-          {erro && <ThemedText style={styles.erro}>{erro}</ThemedText>}
+          {erro && (
+            <ThemedText themeColor="danger" style={styles.erro}>
+              {erro}
+            </ThemedText>
+          )}
 
           <Pressable onPress={handleSalvar}>
             <ThemedView type="backgroundSelected" style={styles.salvarButton}>
@@ -199,8 +203,8 @@ export default function EditarProdutoScreen() {
           </Pressable>
 
           <Pressable onPress={handleExcluir}>
-            <ThemedView style={styles.excluirButton}>
-              <ThemedText type="smallBold" style={styles.excluirText}>
+            <ThemedView style={[styles.excluirButton, { borderColor: theme.danger }]}>
+              <ThemedText type="smallBold" themeColor="danger">
                 Excluir produto
               </ThemedText>
             </ThemedView>
@@ -238,8 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   input: {
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
+    borderBottomWidth: 1,
     paddingVertical: Spacing.two,
     fontSize: 16,
   },
@@ -254,7 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   erro: {
-    color: '#E5484D',
+    fontSize: 14,
   },
   salvarButton: {
     borderRadius: Spacing.two,
@@ -266,9 +269,5 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5484D',
-  },
-  excluirText: {
-    color: '#E5484D',
   },
 });

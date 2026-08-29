@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   diaHoje: {
     borderWidth: 1,
-    borderColor: '#3c87f7',
+    borderColor: '#9C7164',
   },
   limpar: {
     textAlign: 'center',

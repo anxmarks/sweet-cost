@@ -80,7 +80,7 @@ export default function NovoProdutoScreen() {
               onChangeText={setNome}
               placeholder="Ex: Farinha de Trigo"
               placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
@@ -91,7 +91,7 @@ export default function NovoProdutoScreen() {
               onChangeText={setMarca}
               placeholder="Ex: Dona Benta"
               placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
@@ -104,7 +104,7 @@ export default function NovoProdutoScreen() {
                 placeholder="0,00"
                 placeholderTextColor={theme.textSecondary}
                 keyboardType="decimal-pad"
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
               />
             </View>
             <View style={[styles.field, styles.flex1]}>
@@ -115,7 +115,7 @@ export default function NovoProdutoScreen() {
                 placeholder="0"
                 placeholderTextColor={theme.textSecondary}
                 keyboardType="decimal-pad"
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
               />
             </View>
           </View>
@@ -146,7 +146,11 @@ export default function NovoProdutoScreen() {
             </View>
           </View>
 
-          {erro && <ThemedText style={styles.erro}>{erro}</ThemedText>}
+          {erro && (
+            <ThemedText themeColor="danger" style={styles.erro}>
+              {erro}
+            </ThemedText>
+          )}
 
           <Pressable onPress={handleSalvar}>
             <ThemedView type="backgroundSelected" style={styles.salvarButton}>
@@ -186,8 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   input: {
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
+    borderBottomWidth: 1,
     paddingVertical: Spacing.two,
     fontSize: 16,
   },
@@ -202,7 +205,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   erro: {
-    color: '#E5484D',
+    fontSize: 14,
   },
   salvarButton: {
     borderRadius: Spacing.two,
