@@ -7,21 +7,25 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+const PALETTE = {
+  text: '#4B342C',
+  background: '#EFE9DE',
+  backgroundElement: '#F8F5EF',
+  backgroundSelected: 'rgba(156,113,100,0.16)',
+  textSecondary: 'rgba(75,52,44,0.6)',
+  accent: '#9C7164',
+  amber: '#b68235',
+  amberDeep: '#7d5411',
+  danger: '#C38380',
+  border: 'rgba(75,52,44,0.14)',
+  tabBar: '#E8E1D1',
+  avatar: '#D8B69F',
+} as const;
+
+// Paleta única e fixa (sem variação por modo claro/escuro do sistema) — ver plano de redesign.
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  light: PALETTE,
+  dark: PALETTE,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
@@ -50,6 +54,16 @@ export const Fonts = Platform.select({
     mono: 'var(--font-mono)',
   },
 });
+
+export const FontFamilies = {
+  displayRegular: 'CormorantGaramond_400Regular',
+  displaySemiBold: 'CormorantGaramond_600SemiBold',
+  displayRegularItalic: 'CormorantGaramond_400Regular_Italic',
+  bodyRegular: 'Lora_400Regular',
+  bodyMedium: 'Lora_500Medium',
+  bodySemiBold: 'Lora_600SemiBold',
+  bodyRegularItalic: 'Lora_400Regular_Italic',
+} as const;
 
 export const Spacing = {
   half: 2,
