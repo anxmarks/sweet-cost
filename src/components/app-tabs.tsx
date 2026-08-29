@@ -19,6 +19,9 @@ export default function AppTabs() {
         <TabTrigger name="receitas" href="/receitas" asChild>
           <TabButton label="Receitas" icon={require('@/assets/images/tabIcons/explore.png')} />
         </TabTrigger>
+        <TabTrigger name="perfil" href="/perfil" asChild>
+          <TabButton label="Perfil" icon={require('@/assets/images/tabIcons/explore.png')} />
+        </TabTrigger>
       </TabList>
     </Tabs>
   );

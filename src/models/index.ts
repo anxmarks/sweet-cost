@@ -37,3 +37,22 @@ export interface IngredienteReceita {
     quantidade_usada: number;
     unidade_usada: Unidade;
 }
+
+export type CategoriaCustoFixo =
+  | "aluguel"
+  | "luz"
+  | "gas"
+  | "agua"
+  | "impostos"
+  | "diversos";
+
+export interface CustoFixo {
+  id: number;
+  categoria: CategoriaCustoFixo;
+  valor: number;
+}
+
+export interface Configuracao {
+  id: number;
+  receitas_estimadas_por_mes: number;
+}

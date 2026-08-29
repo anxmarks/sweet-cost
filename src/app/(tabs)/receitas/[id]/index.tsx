@@ -9,6 +9,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { listarProdutos } from '@/database/produtoRepository';
 import { atualizarReceita, buscarReceitaPorId, listarIngredientesPorReceita } from '@/database/receitaRepository';
 import { calcularCustoIngrediente } from '@/services/calculoCusto';
+import { calcularCustoFixoRateado } from '@/services/calculoCustoFixo';
 import { calcularPrecoVenda } from '@/services/calculoMargem';
 import { formatarMoeda } from '@/utils/formatarMoeda';
 import { Unidade } from '@/models';
@@ -35,6 +36,7 @@ export default function ReceitaDetalheScreen() {
   const [unidadeRendimento, setUnidadeRendimento] = useState('un');
   const [margemLucro, setMargemLucro] = useState(0);
   const [ingredientes, setIngredientes] = useState<IngredienteView[]>([]);
+  const [custoFixoRateado, setCustoFixoRateado] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -69,6 +71,7 @@ export default function ReceitaDetalheScreen() {
       setUnidadeRendimento(receita.unidade_rendimento);
       setMargemLucro(receita.margem_lucro);
       setIngredientes(ingredientesView);
+      setCustoFixoRateado(calcularCustoFixoRateado());
       setNaoEncontrado(false);
       setCarregando(false);
     }, [receitaId])
@@ -102,8 +105,8 @@ export default function ReceitaDetalheScreen() {
   }
 
   const custoTotal = ingredientes.reduce((total, ingrediente) => total + ingrediente.custo, 0);
-  const precoVenda = calcularPrecoVenda(custoTotal, rendimento, margemLucro);
-  const lucroTotal = custoTotal * (margemLucro / 100);
+  const precoVenda = calcularPrecoVenda(custoTotal, rendimento, margemLucro, custoFixoRateado);
+  const lucroTotal = (custoTotal + custoFixoRateado) * (margemLucro / 100);
 
   return (
     <ThemedView style={styles.container}>
@@ -149,6 +152,13 @@ export default function ReceitaDetalheScreen() {
             <ThemedText type="smallBold">Valor gasto</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {formatarMoeda(custoTotal)}
+            </ThemedText>
+          </View>
+
+          <View style={styles.secao}>
+            <ThemedText type="smallBold">Custo fixo (rateio mensal)</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {formatarMoeda(custoFixoRateado)}
             </ThemedText>
           </View>
 

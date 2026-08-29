@@ -13,6 +13,23 @@ function migrarAdicionarMarcaEmProdutos() {
   }
 }
 
+const CATEGORIAS_CUSTO_FIXO = ["aluguel", "luz", "gas", "agua", "impostos", "diversos"];
+
+function seedCustosFixos() {
+  for (const categoria of CATEGORIAS_CUSTO_FIXO) {
+    db.runSync(
+      "INSERT OR IGNORE INTO custos_fixos (categoria, valor) VALUES ($categoria, 0);",
+      { $categoria: categoria }
+    );
+  }
+}
+
+function seedConfiguracoes() {
+  db.runSync(
+    "INSERT OR IGNORE INTO configuracoes (id, receitas_estimadas_por_mes) VALUES (1, 0);"
+  );
+}
+
 export function initDatabase() {
   db.execSync("PRAGMA foreign_keys = ON;");
 
@@ -52,4 +69,23 @@ export function initDatabase() {
       unidade_usada     TEXT    NOT NULL
     );
   `);
+
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS custos_fixos (
+      id        INTEGER PRIMARY KEY AUTOINCREMENT,
+      categoria TEXT    NOT NULL UNIQUE,
+      valor     REAL    NOT NULL DEFAULT 0
+    );
+  `);
+
+  seedCustosFixos();
+
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS configuracoes (
+      id                          INTEGER PRIMARY KEY CHECK (id = 1),
+      receitas_estimadas_por_mes  REAL    NOT NULL DEFAULT 0
+    );
+  `);
+
+  seedConfiguracoes();
 }
