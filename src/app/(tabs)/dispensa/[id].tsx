@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SeletorData } from '@/components/seletor-data';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -11,8 +12,6 @@ import { atualizarProduto, buscarProdutoPorId, excluirProduto } from '@/database
 import { Unidade } from '@/models';
 
 const UNIDADES: Unidade[] = ['g', 'kg', 'ml', 'l', 'un', 'xicara', 'copo', 'colher_sopa', 'colher_cha'];
-
-const FORMATO_DATA_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function EditarProdutoScreen() {
   const theme = useTheme();
@@ -66,12 +65,8 @@ export default function EditarProdutoScreen() {
       setErro('Informe uma quantidade válida.');
       return;
     }
-    if (!FORMATO_DATA_ISO.test(dataCompra)) {
-      setErro('Informe a data de compra no formato AAAA-MM-DD.');
-      return;
-    }
-    if (dataValidade && !FORMATO_DATA_ISO.test(dataValidade)) {
-      setErro('Informe a data de validade no formato AAAA-MM-DD.');
+    if (!dataCompra) {
+      setErro('Selecione a data de compra.');
       return;
     }
 
@@ -187,23 +182,11 @@ export default function EditarProdutoScreen() {
           <View style={styles.row}>
             <View style={[styles.field, styles.flex1]}>
               <ThemedText type="smallBold">Data de compra *</ThemedText>
-              <TextInput
-                value={dataCompra}
-                onChangeText={setDataCompra}
-                placeholder="AAAA-MM-DD"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-              />
+              <SeletorData value={dataCompra} onSelecionar={setDataCompra} />
             </View>
             <View style={[styles.field, styles.flex1]}>
               <ThemedText type="smallBold">Data de validade</ThemedText>
-              <TextInput
-                value={dataValidade}
-                onChangeText={setDataValidade}
-                placeholder="AAAA-MM-DD"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-              />
+              <SeletorData value={dataValidade} onSelecionar={setDataValidade} opcional />
             </View>
           </View>
 
