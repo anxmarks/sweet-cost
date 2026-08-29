@@ -11,7 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { atualizarProduto, buscarProdutoPorId, excluirProduto } from '@/database/produtoRepository';
 import { Unidade } from '@/models';
 
-const UNIDADES: Unidade[] = ['g', 'kg', 'ml', 'l', 'un', 'xicara', 'copo', 'colher_sopa', 'colher_cha'];
+const UNIDADES: Unidade[] = ['g', 'kg', 'ml', 'l', 'un'];
 
 export default function EditarProdutoScreen() {
   const theme = useTheme();

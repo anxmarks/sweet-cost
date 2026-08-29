@@ -3,11 +3,7 @@ export type Unidade =
   | "kg"
   | "ml"
   | "l"
-  | "un"
-  | "xicara"
-  | "copo"
-  | "colher_sopa"
-  | "colher_cha";
+  | "un";
 
 export interface Produto {
   id: number;

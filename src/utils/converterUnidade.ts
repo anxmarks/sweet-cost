@@ -5,10 +5,6 @@ type Grupo = "massa" | "volume" | "contagem";
 const GRUPOS: Record<Unidade, Grupo> = {
   g: "massa",
   kg: "massa",
-  xicara: "massa",
-  copo: "massa",
-  colher_sopa: "massa",
-  colher_cha: "massa",
   ml: "volume",
   l: "volume",
   un: "contagem",
@@ -18,10 +14,6 @@ const GRUPOS: Record<Unidade, Grupo> = {
 const FATORES_PARA_BASE: Record<Unidade, number> = {
   g: 1,
   kg: 1000,
-  xicara: 120,
-  copo: 200,
-  colher_sopa: 15,
-  colher_cha: 5,
   ml: 1,
   l: 1000,
   un: 1,
