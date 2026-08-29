@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { atualizarProduto, buscarProdutoPorId, excluirProduto } from '@/database/produtoRepository';
+import { listarNomesReceitasUsandoProduto } from '@/database/receitaRepository';
 import { Unidade } from '@/models';
 
 const UNIDADES: Unidade[] = ['g', 'kg', 'ml', 'l', 'un'];
@@ -84,6 +85,16 @@ export default function EditarProdutoScreen() {
   }
 
   function handleExcluir() {
+    const receitasUsando = listarNomesReceitasUsandoProduto(produtoId);
+
+    if (receitasUsando.length > 0) {
+      Alert.alert(
+        'Não é possível excluir',
+        `"${nome}" está sendo usado em: ${receitasUsando.join(', ')}. Remova o ingrediente dessas receitas antes de excluir o produto.`
+      );
+      return;
+    }
+
     Alert.alert('Excluir produto', `Tem certeza que deseja excluir "${nome}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {

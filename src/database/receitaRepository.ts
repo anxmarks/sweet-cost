@@ -64,3 +64,16 @@ export function listarIngredientesPorReceita(receitaId: number): IngredienteRece
 export function excluirIngredienteReceita(id: number): void {
   db.runSync("DELETE FROM ingredientes_receita WHERE id = $id", { $id: id });
 }
+
+export function listarNomesReceitasUsandoProduto(produtoId: number): string[] {
+  return db
+    .getAllSync<{ nome: string }>(
+      `SELECT DISTINCT r.nome
+       FROM receitas r
+       JOIN ingredientes_receita ir ON ir.receita_id = r.id
+       WHERE ir.produto_id = $produto_id
+       ORDER BY r.nome`,
+      { $produto_id: produtoId }
+    )
+    .map((linha) => linha.nome);
+}
