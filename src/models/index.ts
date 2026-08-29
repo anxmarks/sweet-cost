@@ -55,4 +55,5 @@ export interface CustoFixo {
 export interface Configuracao {
   id: number;
   receitas_estimadas_por_mes: number;
+  valor_hora_mao_de_obra: number;
 }

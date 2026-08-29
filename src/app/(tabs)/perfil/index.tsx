@@ -7,7 +7,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { buscarConfiguracao, atualizarReceitasEstimadasPorMes } from '@/database/configuracaoRepository';
+import {
+  buscarConfiguracao,
+  atualizarReceitasEstimadasPorMes,
+  atualizarValorHoraMaoDeObra,
+} from '@/database/configuracaoRepository';
 import { listarCustosFixos, atualizarValorCustoFixo } from '@/database/custoFixoRepository';
 import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/calculoCustoFixo';
 import { formatarMoeda } from '@/utils/formatarMoeda';
@@ -28,6 +32,7 @@ export default function PerfilScreen() {
   const [custos, setCustos] = useState<CustoFixo[]>([]);
   const [valoresTexto, setValoresTexto] = useState<Record<number, string>>({});
   const [receitasEstimadasTexto, setReceitasEstimadasTexto] = useState('0');
+  const [valorHoraTexto, setValorHoraTexto] = useState('0');
   const [totalCustosFixos, setTotalCustosFixos] = useState(0);
   const [custoFixoRateado, setCustoFixoRateado] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
@@ -40,6 +45,7 @@ export default function PerfilScreen() {
       setCustos(listaCustos);
       setValoresTexto(Object.fromEntries(listaCustos.map((custo) => [custo.id, String(custo.valor)])));
       setReceitasEstimadasTexto(String(configuracao.receitas_estimadas_por_mes));
+      setValorHoraTexto(String(configuracao.valor_hora_mao_de_obra));
       setTotalCustosFixos(calcularTotalCustosFixos());
       setCustoFixoRateado(calcularCustoFixoRateado());
       setErro(null);
@@ -51,6 +57,13 @@ export default function PerfilScreen() {
 
     if (Number.isNaN(receitasEstimadasNumero) || receitasEstimadasNumero < 0) {
       setErro('Informe um número válido de receitas estimadas por mês.');
+      return;
+    }
+
+    const valorHoraNumero = Number(valorHoraTexto.replace(',', '.'));
+
+    if (Number.isNaN(valorHoraNumero) || valorHoraNumero < 0) {
+      setErro('Informe um valor por hora válido.');
       return;
     }
 
@@ -66,6 +79,7 @@ export default function PerfilScreen() {
     }
 
     atualizarReceitasEstimadasPorMes(receitasEstimadasNumero);
+    atualizarValorHoraMaoDeObra(valorHoraNumero);
 
     setErro(null);
     setTotalCustosFixos(calcularTotalCustosFixos());
@@ -105,6 +119,19 @@ export default function PerfilScreen() {
               value={receitasEstimadasTexto}
               onChangeText={setReceitasEstimadasTexto}
               placeholder="0"
+              placeholderTextColor={theme.textSecondary}
+              keyboardType="decimal-pad"
+              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <ThemedText type="smallBold">Mão de obra</ThemedText>
+            <ThemedText type="small">Valor da hora de trabalho (R$)</ThemedText>
+            <TextInput
+              value={valorHoraTexto}
+              onChangeText={setValorHoraTexto}
+              placeholder="0,00"
               placeholderTextColor={theme.textSecondary}
               keyboardType="decimal-pad"
               style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}

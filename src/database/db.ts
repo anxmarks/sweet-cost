@@ -13,6 +13,12 @@ function migrarAdicionarMarcaEmProdutos() {
   }
 }
 
+function migrarAdicionarValorHoraEmConfiguracoes() {
+  if (!colunaExiste("configuracoes", "valor_hora_mao_de_obra")) {
+    db.execSync("ALTER TABLE configuracoes ADD COLUMN valor_hora_mao_de_obra REAL NOT NULL DEFAULT 0;");
+  }
+}
+
 const CATEGORIAS_CUSTO_FIXO = ["aluguel", "luz", "gas", "agua", "impostos", "diversos"];
 
 function seedCustosFixos() {
@@ -83,9 +89,12 @@ export function initDatabase() {
   db.execSync(`
     CREATE TABLE IF NOT EXISTS configuracoes (
       id                          INTEGER PRIMARY KEY CHECK (id = 1),
-      receitas_estimadas_por_mes  REAL    NOT NULL DEFAULT 0
+      receitas_estimadas_por_mes  REAL    NOT NULL DEFAULT 0,
+      valor_hora_mao_de_obra      REAL    NOT NULL DEFAULT 0
     );
   `);
+
+  migrarAdicionarValorHoraEmConfiguracoes();
 
   seedConfiguracoes();
 }
