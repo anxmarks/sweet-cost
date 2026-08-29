@@ -1,65 +1,44 @@
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  buscarConfiguracao,
-  atualizarReceitasEstimadasPorMes,
-  atualizarValorHoraMaoDeObra,
-} from '@/database/configuracaoRepository';
-import { listarCustosFixos, atualizarValorCustoFixo } from '@/database/custoFixoRepository';
-import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/calculoCustoFixo';
+import { atualizarPerfil, atualizarValorHoraMaoDeObra, buscarConfiguracao } from '@/database/configuracaoRepository';
+import { listarProdutos } from '@/database/produtoRepository';
+import { listarReceitas } from '@/database/receitaRepository';
+import { calcularTotalCustosFixos } from '@/services/calculoCustoFixo';
 import { formatarMoeda } from '@/utils/formatarMoeda';
-import { CategoriaCustoFixo, CustoFixo } from '@/models';
-
-const ROTULOS_CATEGORIA: Record<CategoriaCustoFixo, string> = {
-  aluguel: 'Aluguel',
-  luz: 'Luz',
-  gas: 'Gás',
-  agua: 'Água',
-  impostos: 'Impostos',
-  diversos: 'Diversos',
-};
 
 export default function PerfilScreen() {
   const theme = useTheme();
 
-  const [custos, setCustos] = useState<CustoFixo[]>([]);
-  const [valoresTexto, setValoresTexto] = useState<Record<number, string>>({});
-  const [receitasEstimadasTexto, setReceitasEstimadasTexto] = useState('0');
+  const [nome, setNome] = useState('');
+  const [atelie, setAtelie] = useState('');
   const [valorHoraTexto, setValorHoraTexto] = useState('0');
   const [totalCustosFixos, setTotalCustosFixos] = useState(0);
-  const [custoFixoRateado, setCustoFixoRateado] = useState(0);
+  const [insumosCount, setInsumosCount] = useState(0);
+  const [fichasCount, setFichasCount] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      const listaCustos = listarCustosFixos();
       const configuracao = buscarConfiguracao();
 
-      setCustos(listaCustos);
-      setValoresTexto(Object.fromEntries(listaCustos.map((custo) => [custo.id, String(custo.valor)])));
-      setReceitasEstimadasTexto(String(configuracao.receitas_estimadas_por_mes));
+      setNome(configuracao.nome_usuario);
+      setAtelie(configuracao.atelie);
       setValorHoraTexto(String(configuracao.valor_hora_mao_de_obra));
       setTotalCustosFixos(calcularTotalCustosFixos());
-      setCustoFixoRateado(calcularCustoFixoRateado());
+      setInsumosCount(listarProdutos().length);
+      setFichasCount(listarReceitas().length);
       setErro(null);
     }, [])
   );
 
   function handleSalvar() {
-    const receitasEstimadasNumero = Number(receitasEstimadasTexto.replace(',', '.'));
-
-    if (Number.isNaN(receitasEstimadasNumero) || receitasEstimadasNumero < 0) {
-      setErro('Informe um número válido de receitas estimadas por mês.');
-      return;
-    }
-
     const valorHoraNumero = Number(valorHoraTexto.replace(',', '.'));
 
     if (Number.isNaN(valorHoraNumero) || valorHoraNumero < 0) {
@@ -67,24 +46,12 @@ export default function PerfilScreen() {
       return;
     }
 
-    for (const custo of custos) {
-      const valorNumero = Number((valoresTexto[custo.id] ?? '0').replace(',', '.'));
-
-      if (Number.isNaN(valorNumero) || valorNumero < 0) {
-        setErro(`Informe um valor válido para ${ROTULOS_CATEGORIA[custo.categoria]}.`);
-        return;
-      }
-
-      atualizarValorCustoFixo(custo.id, valorNumero);
-    }
-
-    atualizarReceitasEstimadasPorMes(receitasEstimadasNumero);
+    atualizarPerfil(nome.trim(), atelie.trim());
     atualizarValorHoraMaoDeObra(valorHoraNumero);
-
     setErro(null);
-    setTotalCustosFixos(calcularTotalCustosFixos());
-    setCustoFixoRateado(calcularCustoFixoRateado());
   }
+
+  const inicial = nome.trim().charAt(0).toUpperCase() || '?';
 
   return (
     <ThemedView style={styles.container}>
@@ -92,53 +59,57 @@ export default function PerfilScreen() {
         <ScrollView contentContainerStyle={styles.form}>
           <ThemedText type="subtitle">Perfil</ThemedText>
 
-          <View style={styles.secao}>
-            <ThemedText type="smallBold">Custos fixos mensais</ThemedText>
-
-            {custos.map((custo) => (
-              <View key={custo.id} style={styles.field}>
-                <ThemedText type="small">{ROTULOS_CATEGORIA[custo.categoria]}</ThemedText>
-                <TextInput
-                  value={valoresTexto[custo.id] ?? ''}
-                  onChangeText={(texto) => setValoresTexto((atual) => ({ ...atual, [custo.id]: texto }))}
-                  placeholder="0,00"
-                  placeholderTextColor={theme.textSecondary}
-                  keyboardType="decimal-pad"
-                  style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-                />
-              </View>
-            ))}
+          <View style={styles.cabecalho}>
+            <View style={[styles.avatar, { backgroundColor: theme.avatar, borderColor: theme.border }]}>
+              <ThemedText type="subtitle">{inicial}</ThemedText>
+            </View>
+            <View style={styles.flex1}>
+              <ThemedText type="subtitle" style={styles.nomeTexto}>
+                {nome || 'Seu nome'}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {atelie || 'Seu ateliê'}
+              </ThemedText>
+            </View>
           </View>
 
           <View style={styles.field}>
-            <ThemedText type="smallBold">Receitas estimadas por mês</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Usado para ratear os custos fixos entre as receitas no cálculo de preço de venda.
-            </ThemedText>
+            <ThemedText type="smallBold">Seu nome</ThemedText>
             <TextInput
-              value={receitasEstimadasTexto}
-              onChangeText={setReceitasEstimadasTexto}
-              placeholder="0"
+              value={nome}
+              onChangeText={setNome}
               placeholderTextColor={theme.textSecondary}
-              keyboardType="decimal-pad"
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
           <View style={styles.field}>
-            <ThemedText type="smallBold">Mão de obra</ThemedText>
-            <ThemedText type="small">Valor da hora de trabalho (R$)</ThemedText>
+            <ThemedText type="smallBold">Ateliê</ThemedText>
+            <TextInput
+              value={atelie}
+              onChangeText={setAtelie}
+              placeholderTextColor={theme.textSecondary}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <ThemedText type="smallBold">Quanto vale sua hora (R$)</ThemedText>
             <TextInput
               value={valorHoraTexto}
               onChangeText={setValorHoraTexto}
               placeholder="0,00"
               placeholderTextColor={theme.textSecondary}
               keyboardType="decimal-pad"
-              style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+              style={[styles.input, { color: theme.text, borderBottomColor: theme.border }]}
             />
           </View>
 
-          {erro && <ThemedText style={styles.erro}>{erro}</ThemedText>}
+          {erro && (
+            <ThemedText themeColor="danger" style={styles.erro}>
+              {erro}
+            </ThemedText>
+          )}
 
           <Pressable onPress={handleSalvar}>
             <ThemedView type="backgroundSelected" style={styles.salvarButton}>
@@ -146,17 +117,28 @@ export default function PerfilScreen() {
             </ThemedView>
           </Pressable>
 
-          <View style={styles.secao}>
-            <ThemedText type="smallBold">Total de custos fixos por mês</ThemedText>
+          <View style={[styles.divisor, { backgroundColor: theme.border }]} />
+
+          <Pressable onPress={() => router.push('/perfil/custos-fixos')}>
+            <View style={[styles.linha, { borderBottomColor: theme.border }]}>
+              <ThemedText type="small">Custos fixos do mês</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {formatarMoeda(totalCustosFixos)} →
+              </ThemedText>
+            </View>
+          </Pressable>
+
+          <View style={[styles.linha, { borderBottomColor: theme.border }]}>
+            <ThemedText type="small">Insumos na dispensa</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {formatarMoeda(totalCustosFixos)}
+              {insumosCount}
             </ThemedText>
           </View>
 
-          <View style={styles.secao}>
-            <ThemedText type="smallBold">Custo fixo rateado por receita</ThemedText>
+          <View style={[styles.linha, { borderBottomColor: theme.border }]}>
+            <ThemedText type="small">Fichas técnicas</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {formatarMoeda(custoFixoRateado)}
+              {fichasCount}
             </ThemedText>
           </View>
         </ScrollView>
@@ -181,24 +163,51 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.six + BottomTabInset,
     gap: Spacing.four,
   },
-  secao: {
-    gap: Spacing.two,
+  cabecalho: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  avatar: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flex1: {
+    flex: 1,
+  },
+  nomeTexto: {
+    fontSize: 22,
+    lineHeight: 26,
   },
   field: {
     gap: Spacing.two,
   },
   input: {
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
+    borderBottomWidth: 1,
     paddingVertical: Spacing.two,
     fontSize: 16,
   },
   erro: {
-    color: '#E5484D',
+    fontSize: 14,
   },
   salvarButton: {
     borderRadius: Spacing.two,
     paddingVertical: Spacing.three,
     alignItems: 'center',
+  },
+  divisor: {
+    height: 1,
+  },
+  linha: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    borderBottomWidth: 1,
+    minHeight: 54,
   },
 });

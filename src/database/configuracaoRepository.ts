@@ -16,3 +16,10 @@ export function atualizarValorHoraMaoDeObra(valor: number): void {
     $valor: valor,
   });
 }
+
+export function atualizarPerfil(nome: string, atelie: string): void {
+  db.runSync("UPDATE configuracoes SET nome_usuario = $nome, atelie = $atelie WHERE id = 1", {
+    $nome: nome,
+    $atelie: atelie,
+  });
+}
