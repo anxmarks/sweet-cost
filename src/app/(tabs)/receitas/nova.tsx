@@ -128,6 +128,8 @@ export default function NovaReceitaScreen() {
       rendimento: rendimentoNumero,
       unidade_rendimento: unidadeRendimento.trim(),
       margem_lucro: margemNumero,
+      horas_producao: 0.5,
+      custo_embalagem: 0,
     });
 
     for (const ingrediente of ingredientes) {

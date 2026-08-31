@@ -23,6 +23,8 @@ export interface Receita {
     rendimento: number;
     unidade_rendimento: string;
     margem_lucro: number;
+    horas_producao: number;
+    custo_embalagem: number;
     criado_em: string;
 }
 

@@ -3,13 +3,15 @@ import { db } from "./db";
 
 export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): number {
   const resultado = db.runSync(
-    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro)
-     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro)`,
+    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem)
+     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem)`,
     {
       $nome: receita.nome,
       $rendimento: receita.rendimento,
       $unidade_rendimento: receita.unidade_rendimento,
       $margem_lucro: receita.margem_lucro,
+      $horas_producao: receita.horas_producao,
+      $custo_embalagem: receita.custo_embalagem,
     }
   );
   return resultado.lastInsertRowId;
@@ -25,12 +27,17 @@ export function buscarReceitaPorId(id: number): Receita | null {
 
 export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "criado_em">): void {
   db.runSync(
-    'UPDATE receitas SET nome = $nome, rendimento = $rendimento, unidade_rendimento = $unidade_rendimento, margem_lucro = $margem_lucro WHERE id = $id',
+    `UPDATE receitas
+     SET nome = $nome, rendimento = $rendimento, unidade_rendimento = $unidade_rendimento,
+         margem_lucro = $margem_lucro, horas_producao = $horas_producao, custo_embalagem = $custo_embalagem
+     WHERE id = $id`,
     {
       $nome: receita.nome,
       $rendimento: receita.rendimento,
       $unidade_rendimento: receita.unidade_rendimento,
       $margem_lucro: receita.margem_lucro,
+      $horas_producao: receita.horas_producao,
+      $custo_embalagem: receita.custo_embalagem,
       $id: id,
     }
   );
@@ -63,6 +70,20 @@ export function listarIngredientesPorReceita(receitaId: number): IngredienteRece
 
 export function excluirIngredienteReceita(id: number): void {
   db.runSync("DELETE FROM ingredientes_receita WHERE id = $id", { $id: id });
+}
+
+export function atualizarIngredienteReceita(
+  id: number,
+  dados: Pick<IngredienteReceita, "quantidade_usada" | "unidade_usada">
+): void {
+  db.runSync(
+    "UPDATE ingredientes_receita SET quantidade_usada = $quantidade_usada, unidade_usada = $unidade_usada WHERE id = $id",
+    {
+      $quantidade_usada: dados.quantidade_usada,
+      $unidade_usada: dados.unidade_usada,
+      $id: id,
+    }
+  );
 }
 
 export function listarNomesReceitasUsandoProduto(produtoId: number): string[] {

@@ -24,6 +24,15 @@ function migrarAdicionarValorHoraEmConfiguracoes() {
   }
 }
 
+function migrarAdicionarHorasEmbalagemEmReceitas() {
+  if (!colunaExiste("receitas", "horas_producao")) {
+    db.execSync("ALTER TABLE receitas ADD COLUMN horas_producao REAL NOT NULL DEFAULT 0.5;");
+  }
+  if (!colunaExiste("receitas", "custo_embalagem")) {
+    db.execSync("ALTER TABLE receitas ADD COLUMN custo_embalagem REAL NOT NULL DEFAULT 0;");
+  }
+}
+
 function migrarAdicionarPerfilEmConfiguracoes() {
   if (!colunaExiste("configuracoes", "nome_usuario")) {
     db.execSync("ALTER TABLE configuracoes ADD COLUMN nome_usuario TEXT NOT NULL DEFAULT '';");
@@ -108,9 +117,13 @@ export function initDatabase() {
       rendimento          REAL    NOT NULL DEFAULT 1,
       unidade_rendimento  TEXT    NOT NULL DEFAULT 'un',
       margem_lucro        REAL    NOT NULL DEFAULT 0,
+      horas_producao      REAL    NOT NULL DEFAULT 0.5,
+      custo_embalagem     REAL    NOT NULL DEFAULT 0,
       criado_em           TEXT    NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  migrarAdicionarHorasEmbalagemEmReceitas();
 
   db.execSync(`
     CREATE TABLE IF NOT EXISTS ingredientes_receita (

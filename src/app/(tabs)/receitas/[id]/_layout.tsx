@@ -4,7 +4,7 @@ export default function ReceitaDetalheLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="editar" />
+      <Stack.Screen name="preco" />
     </Stack>
   );
 }
