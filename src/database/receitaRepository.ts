@@ -25,6 +25,10 @@ export function buscarReceitaPorId(id: number): Receita | null {
   return db.getFirstSync<Receita>("SELECT * FROM receitas WHERE id = $id", { $id: id });
 }
 
+export function buscarReceitaMaisRecente(): Receita | null {
+  return db.getFirstSync<Receita>("SELECT * FROM receitas ORDER BY id DESC LIMIT 1");
+}
+
 export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "criado_em">): void {
   db.runSync(
     `UPDATE receitas
