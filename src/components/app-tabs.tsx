@@ -13,16 +13,16 @@ export default function AppTabs() {
     <Tabs>
       <TabSlot style={{ flex: 1 }} />
       <TabList style={[styles.tabList, { backgroundColor: theme.tabBar, borderTopColor: theme.border }]}>
-        <TabTrigger name="index" href="/" asChild>
+        <TabTrigger name="index" href="/" resetOnFocus asChild>
           <TabButton label="Início" />
         </TabTrigger>
-        <TabTrigger name="dispensa" href="/dispensa" asChild>
+        <TabTrigger name="dispensa" href="/dispensa" resetOnFocus asChild>
           <TabButton label="Dispensa" />
         </TabTrigger>
-        <TabTrigger name="receitas" href="/receitas" asChild>
+        <TabTrigger name="receitas" href="/receitas" resetOnFocus asChild>
           <TabButton label="Receitas" />
         </TabTrigger>
-        <TabTrigger name="perfil" href="/perfil" asChild>
+        <TabTrigger name="perfil" href="/perfil" resetOnFocus asChild>
           <TabButton label="Perfil" />
         </TabTrigger>
       </TabList>
