@@ -118,7 +118,7 @@ export default function PrecoReceitaScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.cabecalho}>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => router.navigate(`/receitas/${receitaId}`)} hitSlop={8}>
             <ThemedText type="link" themeColor="accent">
               ← Ficha técnica
             </ThemedText>
@@ -261,7 +261,7 @@ export default function PrecoReceitaScreen() {
             </View>
           )}
 
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => router.navigate(`/receitas/${receitaId}`)}>
             <View style={[styles.botaoContorno, { borderColor: theme.border }]}>
               <ThemedText type="smallBold">Ajustar receita</ThemedText>
             </View>

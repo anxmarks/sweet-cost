@@ -365,7 +365,7 @@ export default function ReceitaDetalheScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.cabecalho}>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => router.navigate('/receitas')} hitSlop={8}>
             <ThemedText type="link" themeColor="accent">
               ← Receitas
             </ThemedText>
