@@ -1,5 +1,7 @@
-import { useRef } from 'react';
-import { PanResponder, View, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { useTheme } from '@/hooks/use-theme';
 
@@ -15,51 +17,83 @@ type SliderAjusteProps = {
   onFinalizar?: (valor: number) => void;
 };
 
+function arredondarPasso(bruto: number, minimo: number, maximo: number, passo: number) {
+  'worklet';
+  const passos = Math.round((bruto - minimo) / passo);
+  return Math.min(maximo, Math.max(minimo, minimo + passos * passo));
+}
+
 export function SliderAjuste({ valor, minimo, maximo, passo, onMudar, onFinalizar }: SliderAjusteProps) {
   const theme = useTheme();
-  const larguraRef = useRef(0);
-  const configRef = useRef({ minimo, maximo, passo, onMudar, onFinalizar });
-  configRef.current = { minimo, maximo, passo, onMudar, onFinalizar };
+  const [largura, setLargura] = useState(0);
 
-  function xParaValor(x: number): number {
-    const { minimo, maximo, passo } = configRef.current;
-    const largura = larguraRef.current;
-    if (largura <= 0) return minimo;
-    const fracao = Math.min(1, Math.max(0, x / largura));
-    const bruto = minimo + fracao * (maximo - minimo);
-    const passos = Math.round((bruto - minimo) / passo);
-    return Math.min(maximo, Math.max(minimo, minimo + passos * passo));
-  }
+  const fracaoDoValor = maximo === minimo ? 0 : Math.min(1, Math.max(0, (valor - minimo) / (maximo - minimo)));
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evento) => configRef.current.onMudar(xParaValor(evento.nativeEvent.locationX)),
-      onPanResponderMove: (evento) => configRef.current.onMudar(xParaValor(evento.nativeEvent.locationX)),
-      onPanResponderRelease: (evento) => configRef.current.onFinalizar?.(xParaValor(evento.nativeEvent.locationX)),
-      onPanResponderTerminate: (evento) => configRef.current.onFinalizar?.(xParaValor(evento.nativeEvent.locationX)),
+  const fracao = useSharedValue(fracaoDoValor);
+  const ultimoValorEnviado = useSharedValue(valor);
+  const arrastando = useSharedValue(false);
+
+  useEffect(() => {
+    if (!arrastando.value) {
+      fracao.value = fracaoDoValor;
+      ultimoValorEnviado.value = valor;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fracaoDoValor, valor]);
+
+  const gesto = Gesture.Pan()
+    .activeOffsetX([-6, 6])
+    .failOffsetY([-10, 10])
+    .onStart((evento) => {
+      'worklet';
+      if (largura <= 0) return;
+      arrastando.value = true;
+      const nova = Math.min(1, Math.max(0, evento.x / largura));
+      fracao.value = nova;
+      const valorFinal = arredondarPasso(minimo + nova * (maximo - minimo), minimo, maximo, passo);
+      if (valorFinal !== ultimoValorEnviado.value) {
+        ultimoValorEnviado.value = valorFinal;
+        runOnJS(onMudar)(valorFinal);
+      }
     })
-  ).current;
+    .onUpdate((evento) => {
+      'worklet';
+      if (largura <= 0) return;
+      const nova = Math.min(1, Math.max(0, evento.x / largura));
+      fracao.value = nova;
+      const valorFinal = arredondarPasso(minimo + nova * (maximo - minimo), minimo, maximo, passo);
+      if (valorFinal !== ultimoValorEnviado.value) {
+        ultimoValorEnviado.value = valorFinal;
+        runOnJS(onMudar)(valorFinal);
+      }
+    })
+    .onFinalize(() => {
+      'worklet';
+      arrastando.value = false;
+      if (onFinalizar) {
+        runOnJS(onFinalizar)(ultimoValorEnviado.value);
+      }
+    });
 
-  const fracao = maximo === minimo ? 0 : Math.min(1, Math.max(0, (valor - minimo) / (maximo - minimo)));
+  const estiloPreenchida = useAnimatedStyle(() => ({
+    width: `${fracao.value * 100}%`,
+  }));
+
+  const estiloBolinha = useAnimatedStyle(() => ({
+    left: `${fracao.value * 100}%`,
+    marginLeft: -DIAMETRO_BOLINHA / 2,
+  }));
 
   return (
-    <View
-      style={styles.container}
-      onLayout={(evento) => {
-        larguraRef.current = evento.nativeEvent.layout.width;
-      }}
-      {...panResponder.panHandlers}>
-      <View style={[styles.trilhaFundo, { backgroundColor: theme.border }]} />
-      <View style={[styles.trilhaPreenchida, { backgroundColor: theme.accent, width: `${fracao * 100}%` }]} />
+    <GestureDetector gesture={gesto}>
       <View
-        style={[
-          styles.bolinha,
-          { backgroundColor: theme.accent, left: `${fracao * 100}%`, marginLeft: -DIAMETRO_BOLINHA / 2 },
-        ]}
-      />
-    </View>
+        style={styles.container}
+        onLayout={(evento) => setLargura(evento.nativeEvent.layout.width)}>
+        <View style={[styles.trilhaFundo, { backgroundColor: theme.border }]} />
+        <Animated.View style={[styles.trilhaPreenchida, { backgroundColor: theme.accent }, estiloPreenchida]} />
+        <Animated.View style={[styles.bolinha, { backgroundColor: theme.accent }, estiloBolinha]} />
+      </View>
+    </GestureDetector>
   );
 }
 

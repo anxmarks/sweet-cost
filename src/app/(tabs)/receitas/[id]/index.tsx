@@ -577,7 +577,7 @@ export default function ReceitaDetalheScreen() {
             valor={margemLucro}
             minimo={0}
             maximo={150}
-            passo={5}
+            passo={1}
             onMudar={setMargemLucro}
             onFinalizar={handleFinalizarMargem}
           />
