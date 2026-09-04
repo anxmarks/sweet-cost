@@ -130,6 +130,7 @@ export default function NovaReceitaScreen() {
       margem_lucro: margemNumero,
       horas_producao: 0.5,
       custo_embalagem: 0,
+      anotacoes: '',
     });
 
     for (const ingrediente of ingredientes) {

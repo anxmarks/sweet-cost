@@ -25,6 +25,7 @@ export interface Receita {
     margem_lucro: number;
     horas_producao: number;
     custo_embalagem: number;
+    anotacoes: string;
     criado_em: string;
 }
 

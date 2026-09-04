@@ -77,6 +77,7 @@ export default function ReceitaDetalheScreen() {
   const [horasProducao, setHorasProducao] = useState(0.5);
   const [custoEmbalagem, setCustoEmbalagem] = useState(0);
   const [custoEmbalagemTexto, setCustoEmbalagemTexto] = useState('0');
+  const [anotacoes, setAnotacoes] = useState('');
 
   const [ingredientes, setIngredientes] = useState<IngredienteView[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -130,6 +131,7 @@ export default function ReceitaDetalheScreen() {
       setHorasProducao(receita.horas_producao);
       setCustoEmbalagem(receita.custo_embalagem);
       setCustoEmbalagemTexto(String(receita.custo_embalagem));
+      setAnotacoes(receita.anotacoes);
       setIngredientes(ingredientesView);
       setProdutos(todosProdutos);
       setValorHoraMaoDeObra(configuracao.valor_hora_mao_de_obra);
@@ -151,8 +153,13 @@ export default function ReceitaDetalheScreen() {
       margem_lucro: margemLucro,
       horas_producao: horasProducao,
       custo_embalagem: custoEmbalagem,
+      anotacoes,
       ...parciais,
     });
+  }
+
+  function confirmarAnotacoes() {
+    persistir({ anotacoes });
   }
 
   function confirmarNome() {
@@ -584,6 +591,17 @@ export default function ReceitaDetalheScreen() {
             </View>
           </Pressable>
 
+          <SecaoHeader titulo="Anotações" />
+          <TextInput
+            value={anotacoes}
+            onChangeText={setAnotacoes}
+            onBlur={confirmarAnotacoes}
+            placeholder="Ex: cliente prefere menos doce, decorar com raspas de chocolate…"
+            placeholderTextColor={theme.textSecondary}
+            multiline
+            style={[styles.anotacoesInput, { color: theme.text, borderColor: theme.border }]}
+          />
+
           <Pressable onPress={handleExcluir} style={styles.excluirWrap}>
             <ThemedText type="small" themeColor="danger">
               Excluir receita
@@ -815,6 +833,14 @@ const styles = StyleSheet.create({
   },
   margemTexto: {
     marginTop: Spacing.two,
+  },
+  anotacoesInput: {
+    minHeight: 90,
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+    fontSize: 15,
+    textAlignVertical: 'top',
   },
   custosFixosBox: {
     flexDirection: 'row',

@@ -3,8 +3,8 @@ import { db } from "./db";
 
 export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): number {
   const resultado = db.runSync(
-    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem)
-     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem)`,
+    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem, anotacoes)
+     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem, $anotacoes)`,
     {
       $nome: receita.nome,
       $rendimento: receita.rendimento,
@@ -12,6 +12,7 @@ export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): numb
       $margem_lucro: receita.margem_lucro,
       $horas_producao: receita.horas_producao,
       $custo_embalagem: receita.custo_embalagem,
+      $anotacoes: receita.anotacoes,
     }
   );
   return resultado.lastInsertRowId;
@@ -33,7 +34,8 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
   db.runSync(
     `UPDATE receitas
      SET nome = $nome, rendimento = $rendimento, unidade_rendimento = $unidade_rendimento,
-         margem_lucro = $margem_lucro, horas_producao = $horas_producao, custo_embalagem = $custo_embalagem
+         margem_lucro = $margem_lucro, horas_producao = $horas_producao, custo_embalagem = $custo_embalagem,
+         anotacoes = $anotacoes
      WHERE id = $id`,
     {
       $nome: receita.nome,
@@ -42,6 +44,7 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
       $margem_lucro: receita.margem_lucro,
       $horas_producao: receita.horas_producao,
       $custo_embalagem: receita.custo_embalagem,
+      $anotacoes: receita.anotacoes,
       $id: id,
     }
   );
