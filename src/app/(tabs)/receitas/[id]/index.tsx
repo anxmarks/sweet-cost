@@ -1,6 +1,6 @@
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SeletorUnidade } from '@/components/seletor-unidade';
@@ -8,7 +8,6 @@ import { SliderAjuste } from '@/components/slider-ajuste';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { buscarConfiguracao } from '@/database/configuracaoRepository';
 import { listarProdutos } from '@/database/produtoRepository';
 import {
@@ -20,12 +19,13 @@ import {
   inserirIngredienteReceita,
   listarIngredientesPorReceita,
 } from '@/database/receitaRepository';
+import { useTheme } from '@/hooks/use-theme';
 import { Produto, Receita, Unidade } from '@/models';
 import { calcularCustoIngrediente } from '@/services/calculoCusto';
 import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/calculoCustoFixo';
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
-import { formatarMoeda } from '@/utils/formatarMoeda';
 import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
+import { formatarMoeda } from '@/utils/formatarMoeda';
 
 type IngredienteView = {
   ingredienteId: number;
@@ -596,7 +596,7 @@ export default function ReceitaDetalheScreen() {
             value={anotacoes}
             onChangeText={setAnotacoes}
             onBlur={confirmarAnotacoes}
-            placeholder="Ex: cliente prefere menos doce, decorar com raspas de chocolate…"
+            placeholder="Ex: Assar a 180°C por 25 minutos"
             placeholderTextColor={theme.textSecondary}
             multiline
             style={[styles.anotacoesInput, { color: theme.text, borderColor: theme.border }]}
