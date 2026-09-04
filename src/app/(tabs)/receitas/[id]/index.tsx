@@ -4,6 +4,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SeletorUnidade } from '@/components/seletor-unidade';
+import { SliderAjuste } from '@/components/slider-ajuste';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -25,9 +26,6 @@ import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/c
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
 import { formatarMoeda } from '@/utils/formatarMoeda';
 import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
-
-const INCREMENTO_MARGEM = 5;
-const INCREMENTO_HORAS = 0.5;
 
 type IngredienteView = {
   ingredienteId: number;
@@ -194,15 +192,11 @@ export default function ReceitaDetalheScreen() {
     persistir({ custo_embalagem: numero });
   }
 
-  function handleAjustarMargem(delta: number) {
-    const nova = Math.max(0, Math.min(150, margemLucro + delta));
-    setMargemLucro(nova);
+  function handleFinalizarMargem(nova: number) {
     persistir({ margem_lucro: nova });
   }
 
-  function handleAjustarHoras(delta: number) {
-    const nova = Math.max(0.5, Math.min(10, Number((horasProducao + delta).toFixed(1))));
-    setHorasProducao(nova);
+  function handleFinalizarHoras(nova: number) {
     persistir({ horas_producao: nova });
   }
 
@@ -523,22 +517,18 @@ export default function ReceitaDetalheScreen() {
           <SecaoHeader titulo="Seu trabalho" />
           <View style={styles.linhaEntreValores}>
             <ThemedText type="small">Horas na produção</ThemedText>
-            <View style={styles.stepperRow}>
-              <Pressable onPress={() => handleAjustarHoras(-INCREMENTO_HORAS)} hitSlop={8}>
-                <View style={[styles.stepperBotao, { borderColor: theme.border }]}>
-                  <ThemedText type="smallBold">−</ThemedText>
-                </View>
-              </Pressable>
-              <ThemedText type="subtitle" style={styles.horasTexto}>
-                {String(horasProducao).replace('.', ',')} h
-              </ThemedText>
-              <Pressable onPress={() => handleAjustarHoras(INCREMENTO_HORAS)} hitSlop={8}>
-                <View style={[styles.stepperBotao, { borderColor: theme.border }]}>
-                  <ThemedText type="smallBold">+</ThemedText>
-                </View>
-              </Pressable>
-            </View>
+            <ThemedText type="subtitle" style={styles.horasTexto}>
+              {String(horasProducao).replace('.', ',')} h
+            </ThemedText>
           </View>
+          <SliderAjuste
+            valor={horasProducao}
+            minimo={0.5}
+            maximo={10}
+            passo={0.5}
+            onMudar={setHorasProducao}
+            onFinalizar={handleFinalizarHoras}
+          />
           <View style={styles.linhaEntreValores}>
             <ThemedText type="small" themeColor="textSecondary">
               a {formatarMoeda(valorHoraMaoDeObra)} por hora
@@ -576,21 +566,17 @@ export default function ReceitaDetalheScreen() {
           </Pressable>
 
           <SecaoHeader titulo="Margem de lucro" valor={`${margemLucro}%`} />
-          <View style={styles.stepperRow}>
-            <Pressable onPress={() => handleAjustarMargem(-INCREMENTO_MARGEM)} hitSlop={8}>
-              <View style={[styles.stepperBotao, { borderColor: theme.border }]}>
-                <ThemedText type="smallBold">−</ThemedText>
-              </View>
-            </Pressable>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.flex1}>
-              Sobre o custo total de {formatarMoeda(custoTotal)}, sua margem é {formatarMoeda(lucroTotal)}.
-            </ThemedText>
-            <Pressable onPress={() => handleAjustarMargem(INCREMENTO_MARGEM)} hitSlop={8}>
-              <View style={[styles.stepperBotao, { borderColor: theme.border }]}>
-                <ThemedText type="smallBold">+</ThemedText>
-              </View>
-            </Pressable>
-          </View>
+          <SliderAjuste
+            valor={margemLucro}
+            minimo={0}
+            maximo={150}
+            passo={5}
+            onMudar={setMargemLucro}
+            onFinalizar={handleFinalizarMargem}
+          />
+          <ThemedText type="small" themeColor="textSecondary" style={styles.margemTexto}>
+            Sobre o custo total de {formatarMoeda(custoTotal)}, sua margem é {formatarMoeda(lucroTotal)}.
+          </ThemedText>
 
           <Pressable onPress={() => router.push(`/receitas/${receitaId}/preco`)}>
             <View style={[styles.botaoPrimario, { borderColor: theme.accent }]}>
@@ -826,6 +812,9 @@ const styles = StyleSheet.create({
     fontSize: 19,
     minWidth: 56,
     textAlign: 'center',
+  },
+  margemTexto: {
+    marginTop: Spacing.two,
   },
   custosFixosBox: {
     flexDirection: 'row',
