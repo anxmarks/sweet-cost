@@ -11,9 +11,11 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { buscarConfiguracao } from '@/database/configuracaoRepository';
 import { listarProdutos } from '@/database/produtoRepository';
 import {
+  atualizarFixada,
   atualizarIngredienteReceita,
   atualizarReceita,
   buscarReceitaPorId,
+  contarReceitasFixadas,
   excluirIngredienteReceita,
   excluirReceita,
   inserirIngredienteReceita,
@@ -78,6 +80,7 @@ export default function ReceitaDetalheScreen() {
   const [custoEmbalagem, setCustoEmbalagem] = useState(0);
   const [custoEmbalagemTexto, setCustoEmbalagemTexto] = useState('0');
   const [anotacoes, setAnotacoes] = useState('');
+  const [fixada, setFixada] = useState(0);
 
   const [ingredientes, setIngredientes] = useState<IngredienteView[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -132,6 +135,7 @@ export default function ReceitaDetalheScreen() {
       setCustoEmbalagem(receita.custo_embalagem);
       setCustoEmbalagemTexto(String(receita.custo_embalagem));
       setAnotacoes(receita.anotacoes);
+      setFixada(receita.fixada);
       setIngredientes(ingredientesView);
       setProdutos(todosProdutos);
       setValorHoraMaoDeObra(configuracao.valor_hora_mao_de_obra);
@@ -154,6 +158,7 @@ export default function ReceitaDetalheScreen() {
       horas_producao: horasProducao,
       custo_embalagem: custoEmbalagem,
       anotacoes,
+      fixada,
       ...parciais,
     });
   }
@@ -168,6 +173,23 @@ export default function ReceitaDetalheScreen() {
     if (!nomeTratado || nomeTratado === nome) return;
     setNome(nomeTratado);
     persistir({ nome: nomeTratado });
+  }
+
+  function handleAlternarFixada() {
+    if (fixada === 1) {
+      setFixada(0);
+      atualizarFixada(receitaId, false);
+      return;
+    }
+    if (contarReceitasFixadas() >= 5) {
+      Alert.alert(
+        'Limite de receitas fixadas',
+        'Você já tem 5 receitas fixadas na tela Início. Remova uma antes de fixar esta.'
+      );
+      return;
+    }
+    setFixada(1);
+    atualizarFixada(receitaId, true);
   }
 
   function confirmarRendimento() {
@@ -372,31 +394,40 @@ export default function ReceitaDetalheScreen() {
             </ThemedText>
           </Pressable>
 
-          {editandoNome ? (
-            <TextInput
-              value={nomeRascunho}
-              onChangeText={setNomeRascunho}
-              onBlur={confirmarNome}
-              onSubmitEditing={confirmarNome}
-              autoFocus
-              style={[styles.tituloInput, { color: theme.text, borderBottomColor: theme.border }]}
-            />
-          ) : (
-            <Pressable
-              onPress={() => {
-                setNomeRascunho(nome);
-                setEditandoNome(true);
-              }}>
-              <View style={styles.tituloRow}>
-                <ThemedText type="subtitle" style={styles.titulo}>
-                  {nome}
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  ✎
-                </ThemedText>
-              </View>
+          <View style={styles.tituloComFixarRow}>
+            <View style={styles.flex1}>
+              {editandoNome ? (
+                <TextInput
+                  value={nomeRascunho}
+                  onChangeText={setNomeRascunho}
+                  onBlur={confirmarNome}
+                  onSubmitEditing={confirmarNome}
+                  autoFocus
+                  style={[styles.tituloInput, { color: theme.text, borderBottomColor: theme.border }]}
+                />
+              ) : (
+                <Pressable
+                  onPress={() => {
+                    setNomeRascunho(nome);
+                    setEditandoNome(true);
+                  }}>
+                  <View style={styles.tituloRow}>
+                    <ThemedText type="subtitle" style={styles.titulo}>
+                      {nome}
+                    </ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      ✎
+                    </ThemedText>
+                  </View>
+                </Pressable>
+              )}
+            </View>
+            <Pressable onPress={handleAlternarFixada} hitSlop={8}>
+              <ThemedText type="subtitle" themeColor={fixada ? 'amber' : 'textSecondary'} style={styles.estrela}>
+                {fixada ? '★' : '☆'}
+              </ThemedText>
             </Pressable>
-          )}
+          </View>
 
           <ThemedText type="small" themeColor="textSecondary">
             {rendimento} {unidadeRendimento} · {ingredientes.length} insumos · custo {formatarMoeda(custoTotal)}
@@ -692,10 +723,18 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
     gap: Spacing.half,
   },
+  tituloComFixarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
   tituloRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  estrela: {
+    fontSize: 24,
   },
   titulo: {
     fontSize: 28,

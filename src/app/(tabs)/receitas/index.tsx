@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { listarReceitas } from '@/database/receitaRepository';
+import { atualizarFixada, contarReceitasFixadas, listarReceitas } from '@/database/receitaRepository';
 import { calcularPrecoVendaReceita } from '@/services/calculoMargem';
 import { Receita } from '@/models';
 import { formatarMoeda } from '@/utils/formatarMoeda';
@@ -19,6 +19,23 @@ export default function ReceitasScreen() {
       setReceitas(listarReceitas());
     }, [])
   );
+
+  function handleAlternarFixada(receita: Receita) {
+    if (receita.fixada === 1) {
+      atualizarFixada(receita.id, false);
+      setReceitas((atual) => atual.map((r) => (r.id === receita.id ? { ...r, fixada: 0 } : r)));
+      return;
+    }
+    if (contarReceitasFixadas() >= 5) {
+      Alert.alert(
+        'Limite de receitas fixadas',
+        'Você já tem 5 receitas fixadas na tela Início. Remova uma antes de fixar esta.'
+      );
+      return;
+    }
+    atualizarFixada(receita.id, true);
+    setReceitas((atual) => atual.map((r) => (r.id === receita.id ? { ...r, fixada: 1 } : r)));
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -45,7 +62,16 @@ export default function ReceitasScreen() {
             return (
               <Pressable onPress={() => router.push(`/receitas/${item.id}`)}>
                 <ThemedView type="backgroundElement" style={styles.card}>
-                  <ThemedText type="smallBold">{item.nome}</ThemedText>
+                  <View style={styles.cardHeader}>
+                    <ThemedText type="smallBold" style={styles.flex1}>
+                      {item.nome}
+                    </ThemedText>
+                    <Pressable onPress={() => handleAlternarFixada(item)} hitSlop={8}>
+                      <ThemedText themeColor={item.fixada ? 'amber' : 'textSecondary'} style={styles.estrela}>
+                        {item.fixada ? '★' : '☆'}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
 
                   <ThemedText type="small" themeColor="textSecondary">
                     Rende {item.rendimento} {item.unidade_rendimento} — margem {item.margem_lucro}%
@@ -95,5 +121,16 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     padding: Spacing.three,
     gap: Spacing.one,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  flex1: {
+    flex: 1,
+  },
+  estrela: {
+    fontSize: 18,
   },
 });

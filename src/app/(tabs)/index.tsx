@@ -9,8 +9,8 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { buscarConfiguracao } from '@/database/configuracaoRepository';
 import { listarProdutos } from '@/database/produtoRepository';
-import { buscarReceitaMaisRecente } from '@/database/receitaRepository';
-import { Produto } from '@/models';
+import { buscarReceitaMaisRecente, listarReceitasFixadas } from '@/database/receitaRepository';
+import { Configuracao, Produto, Receita } from '@/models';
 import { calcularAlertaValidade } from '@/services/alertaValidade';
 import { calcularCustoTotalReceita } from '@/services/calculoCusto';
 import { calcularCustoFixoRateado } from '@/services/calculoCustoFixo';
@@ -25,6 +25,24 @@ type ReceitaRecente = {
   custoTotal: number;
   precoVenda: number;
 };
+
+type ReceitaFixada = {
+  id: number;
+  nome: string;
+  rendimentoLabel: string;
+  precoVenda: number;
+};
+
+function calcularResumoReceita(receita: Receita, configuracao: Configuracao, custoFixoRateado: number) {
+  const custoIngredientes = calcularCustoTotalReceita(receita.id);
+  const custoMaoDeObra = calcularCustoMaoDeObra(receita.horas_producao, configuracao.valor_hora_mao_de_obra);
+  const custoTotal = custoIngredientes + custoMaoDeObra + receita.custo_embalagem;
+
+  return {
+    custoTotal: custoTotal + custoFixoRateado,
+    precoVenda: calcularPrecoVenda(custoTotal, receita.rendimento, receita.margem_lucro, custoFixoRateado),
+  };
+}
 
 function saudacao(): string {
   const hora = new Date().getHours();
@@ -57,6 +75,7 @@ export default function InicioScreen() {
   const [primeiroNome, setPrimeiroNome] = useState('');
   const [inicial, setInicial] = useState('?');
   const [receitaRecente, setReceitaRecente] = useState<ReceitaRecente | null>(null);
+  const [receitasFixadas, setReceitasFixadas] = useState<ReceitaFixada[]>([]);
   const [insumosCount, setInsumosCount] = useState(0);
   const [custoFixoRateado, setCustoFixoRateado] = useState(0);
   const [avisoValidade, setAvisoValidade] = useState<string | null>(null);
@@ -67,28 +86,35 @@ export default function InicioScreen() {
       const produtos = listarProdutos();
       const receita = buscarReceitaMaisRecente();
 
+      const custoFixo = calcularCustoFixoRateado();
+
       setPrimeiroNome(configuracao.nome_usuario.trim().split(' ')[0] || '');
       setInicial(configuracao.nome_usuario.trim().charAt(0).toUpperCase() || '?');
       setInsumosCount(produtos.length);
-      setCustoFixoRateado(calcularCustoFixoRateado());
+      setCustoFixoRateado(custoFixo);
       setAvisoValidade(montarAvisoValidade(produtos));
 
       if (receita) {
-        const custoIngredientes = calcularCustoTotalReceita(receita.id);
-        const custoMaoDeObra = calcularCustoMaoDeObra(receita.horas_producao, configuracao.valor_hora_mao_de_obra);
-        const custoTotal = custoIngredientes + custoMaoDeObra + receita.custo_embalagem;
-        const custoFixo = calcularCustoFixoRateado();
-
+        const resumo = calcularResumoReceita(receita, configuracao, custoFixo);
         setReceitaRecente({
           id: receita.id,
           nome: receita.nome,
           rendimentoLabel: `${receita.rendimento} ${receita.unidade_rendimento}`,
-          custoTotal: custoTotal + custoFixo,
-          precoVenda: calcularPrecoVenda(custoTotal, receita.rendimento, receita.margem_lucro, custoFixo),
+          custoTotal: resumo.custoTotal,
+          precoVenda: resumo.precoVenda,
         });
       } else {
         setReceitaRecente(null);
       }
+
+      setReceitasFixadas(
+        listarReceitasFixadas().map((r) => ({
+          id: r.id,
+          nome: r.nome,
+          rendimentoLabel: `${r.rendimento} ${r.unidade_rendimento}`,
+          precoVenda: calcularResumoReceita(r, configuracao, custoFixo).precoVenda,
+        }))
+      );
     }, [])
   );
 
@@ -157,6 +183,31 @@ export default function InicioScreen() {
                   </ThemedText>
                 </View>
               </Pressable>
+            </View>
+          )}
+
+          {receitasFixadas.length > 0 && (
+            <View style={styles.fixadasSecao}>
+              <ThemedText type="small" themeColor="accent" style={styles.rotuloUppercase}>
+                Receitas fixadas
+              </ThemedText>
+              {receitasFixadas.map((receita) => (
+                <Pressable key={receita.id} onPress={() => router.push(`/receitas/${receita.id}`)}>
+                  <View style={[styles.fixadaLinha, { borderColor: theme.border }]}>
+                    <View style={styles.flex1}>
+                      <ThemedText type="subtitle" style={styles.fixadaNome}>
+                        {receita.nome}
+                      </ThemedText>
+                      <ThemedText type="small" themeColor="textSecondary">
+                        {receita.rendimentoLabel}
+                      </ThemedText>
+                    </View>
+                    <ThemedText type="smallBold" themeColor="amberDeep">
+                      {formatarMoeda(receita.precoVenda)}
+                    </ThemedText>
+                  </View>
+                </Pressable>
+              ))}
             </View>
           )}
 
@@ -280,6 +331,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fixadasSecao: {
+    gap: Spacing.two,
+  },
+  fixadaLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+  },
+  fixadaNome: {
+    fontSize: 18,
+    lineHeight: 22,
   },
   statsRow: {
     flexDirection: 'row',

@@ -3,8 +3,8 @@ import { db } from "./db";
 
 export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): number {
   const resultado = db.runSync(
-    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem, anotacoes)
-     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem, $anotacoes)`,
+    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem, anotacoes, fixada)
+     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem, $anotacoes, $fixada)`,
     {
       $nome: receita.nome,
       $rendimento: receita.rendimento,
@@ -13,6 +13,7 @@ export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): numb
       $horas_producao: receita.horas_producao,
       $custo_embalagem: receita.custo_embalagem,
       $anotacoes: receita.anotacoes,
+      $fixada: receita.fixada,
     }
   );
   return resultado.lastInsertRowId;
@@ -35,7 +36,7 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
     `UPDATE receitas
      SET nome = $nome, rendimento = $rendimento, unidade_rendimento = $unidade_rendimento,
          margem_lucro = $margem_lucro, horas_producao = $horas_producao, custo_embalagem = $custo_embalagem,
-         anotacoes = $anotacoes
+         anotacoes = $anotacoes, fixada = $fixada
      WHERE id = $id`,
     {
       $nome: receita.nome,
@@ -45,9 +46,23 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
       $horas_producao: receita.horas_producao,
       $custo_embalagem: receita.custo_embalagem,
       $anotacoes: receita.anotacoes,
+      $fixada: receita.fixada,
       $id: id,
     }
   );
+}
+
+export function listarReceitasFixadas(): Receita[] {
+  return db.getAllSync<Receita>("SELECT * FROM receitas WHERE fixada = 1 ORDER BY nome");
+}
+
+export function contarReceitasFixadas(): number {
+  const linha = db.getFirstSync<{ total: number }>("SELECT COUNT(*) AS total FROM receitas WHERE fixada = 1");
+  return linha?.total ?? 0;
+}
+
+export function atualizarFixada(id: number, fixada: boolean): void {
+  db.runSync("UPDATE receitas SET fixada = $fixada WHERE id = $id", { $fixada: fixada ? 1 : 0, $id: id });
 }
 
 export function excluirReceita(id: number): void {

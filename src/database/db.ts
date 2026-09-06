@@ -39,6 +39,12 @@ function migrarAdicionarAnotacoesEmReceitas() {
   }
 }
 
+function migrarAdicionarFixadaEmReceitas() {
+  if (!colunaExiste("receitas", "fixada")) {
+    db.execSync("ALTER TABLE receitas ADD COLUMN fixada INTEGER NOT NULL DEFAULT 0;");
+  }
+}
+
 function migrarAdicionarPerfilEmConfiguracoes() {
   if (!colunaExiste("configuracoes", "nome_usuario")) {
     db.execSync("ALTER TABLE configuracoes ADD COLUMN nome_usuario TEXT NOT NULL DEFAULT '';");
@@ -126,12 +132,14 @@ export function initDatabase() {
       horas_producao      REAL    NOT NULL DEFAULT 0.5,
       custo_embalagem     REAL    NOT NULL DEFAULT 0,
       anotacoes           TEXT    NOT NULL DEFAULT '',
+      fixada              INTEGER NOT NULL DEFAULT 0,
       criado_em           TEXT    NOT NULL DEFAULT (datetime('now'))
     );
   `);
 
   migrarAdicionarHorasEmbalagemEmReceitas();
   migrarAdicionarAnotacoesEmReceitas();
+  migrarAdicionarFixadaEmReceitas();
 
   db.execSync(`
     CREATE TABLE IF NOT EXISTS ingredientes_receita (

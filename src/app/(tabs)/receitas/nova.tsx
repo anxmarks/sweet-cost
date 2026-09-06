@@ -131,6 +131,7 @@ export default function NovaReceitaScreen() {
       horas_producao: 0.5,
       custo_embalagem: 0,
       anotacoes: '',
+      fixada: 0,
     });
 
     for (const ingrediente of ingredientes) {
