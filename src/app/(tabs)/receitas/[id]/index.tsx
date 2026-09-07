@@ -28,6 +28,7 @@ import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/c
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
 import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
 import { formatarMoeda } from '@/utils/formatarMoeda';
+import { listarTags } from '@/utils/listarTags';
 
 type IngredienteView = {
   ingredienteId: number;
@@ -81,6 +82,8 @@ export default function ReceitaDetalheScreen() {
   const [custoEmbalagemTexto, setCustoEmbalagemTexto] = useState('0');
   const [anotacoes, setAnotacoes] = useState('');
   const [fixada, setFixada] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [novaTagTexto, setNovaTagTexto] = useState('');
 
   const [ingredientes, setIngredientes] = useState<IngredienteView[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -136,6 +139,7 @@ export default function ReceitaDetalheScreen() {
       setCustoEmbalagemTexto(String(receita.custo_embalagem));
       setAnotacoes(receita.anotacoes);
       setFixada(receita.fixada);
+      setTags(listarTags(receita.tags));
       setIngredientes(ingredientesView);
       setProdutos(todosProdutos);
       setValorHoraMaoDeObra(configuracao.valor_hora_mao_de_obra);
@@ -159,8 +163,25 @@ export default function ReceitaDetalheScreen() {
       custo_embalagem: custoEmbalagem,
       anotacoes,
       fixada,
+      tags: tags.join(','),
       ...parciais,
     });
+  }
+
+  function adicionarTag() {
+    const tagTratada = novaTagTexto.trim();
+    setNovaTagTexto('');
+    if (!tagTratada || tags.some((tag) => tag.toLowerCase() === tagTratada.toLowerCase())) return;
+
+    const novasTags = [...tags, tagTratada];
+    setTags(novasTags);
+    persistir({ tags: novasTags.join(',') });
+  }
+
+  function removerTag(tag: string) {
+    const novasTags = tags.filter((t) => t !== tag);
+    setTags(novasTags);
+    persistir({ tags: novasTags.join(',') });
   }
 
   function confirmarAnotacoes() {
@@ -432,6 +453,27 @@ export default function ReceitaDetalheScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             {rendimento} {unidadeRendimento} · {ingredientes.length} insumos · custo {formatarMoeda(custoTotal)}
           </ThemedText>
+
+          <View style={styles.tagsRow}>
+            {tags.map((tag) => (
+              <Pressable key={tag} onPress={() => removerTag(tag)}>
+                <View style={[styles.tagChip, { borderColor: theme.border }]}>
+                  <ThemedText type="small" themeColor="accent">
+                    {tag} ×
+                  </ThemedText>
+                </View>
+              </Pressable>
+            ))}
+            <TextInput
+              value={novaTagTexto}
+              onChangeText={setNovaTagTexto}
+              onSubmitEditing={adicionarTag}
+              onBlur={adicionarTag}
+              placeholder="+ tag"
+              placeholderTextColor={theme.textSecondary}
+              style={[styles.tagInput, { color: theme.text }]}
+            />
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.conteudo}>
@@ -735,6 +777,24 @@ const styles = StyleSheet.create({
   },
   estrela: {
     fontSize: 24,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: Spacing.one,
+    marginTop: Spacing.one,
+  },
+  tagChip: {
+    borderWidth: 1,
+    borderRadius: Spacing.four,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 2,
+  },
+  tagInput: {
+    minWidth: 64,
+    fontSize: 13,
+    paddingVertical: 2,
   },
   titulo: {
     fontSize: 28,

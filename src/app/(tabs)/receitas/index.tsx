@@ -6,17 +6,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { atualizarFixada, contarReceitasFixadas, listarReceitas } from '@/database/receitaRepository';
 import { calcularPrecoVendaReceita } from '@/services/calculoMargem';
 import { Receita } from '@/models';
 import { formatarMoeda } from '@/utils/formatarMoeda';
+import { listarTags } from '@/utils/listarTags';
 
 export default function ReceitasScreen() {
+  const theme = useTheme();
   const [receitas, setReceitas] = useState<Receita[]>([]);
+  const [tagFiltro, setTagFiltro] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       setReceitas(listarReceitas());
+      setTagFiltro(null);
     }, [])
   );
 
@@ -37,6 +42,14 @@ export default function ReceitasScreen() {
     setReceitas((atual) => atual.map((r) => (r.id === receita.id ? { ...r, fixada: 1 } : r)));
   }
 
+  const todasAsTags = [...new Set(receitas.flatMap((receita) => listarTags(receita.tags)))].sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  const receitasFiltradas = tagFiltro
+    ? receitas.filter((receita) => listarTags(receita.tags).includes(tagFiltro))
+    : receitas;
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -49,15 +62,40 @@ export default function ReceitasScreen() {
           </Pressable>
         </View>
 
+        {todasAsTags.length > 0 && (
+          <View style={styles.filtrosRow}>
+            {todasAsTags.map((tag) => {
+              const ativo = tag === tagFiltro;
+              return (
+                <Pressable key={tag} onPress={() => setTagFiltro(ativo ? null : tag)}>
+                  <View
+                    style={[
+                      styles.filtroChip,
+                      { borderColor: ativo ? theme.accent : theme.border },
+                      ativo && { backgroundColor: theme.backgroundSelected },
+                    ]}>
+                    <ThemedText type="small" themeColor={ativo ? 'accent' : 'textSecondary'}>
+                      {tag}
+                    </ThemedText>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+
         <FlatList
-          data={receitas}
+          data={receitasFiltradas}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            <ThemedText themeColor="textSecondary">Nenhuma receita cadastrada ainda.</ThemedText>
+            <ThemedText themeColor="textSecondary">
+              {tagFiltro ? 'Nenhuma receita com essa tag.' : 'Nenhuma receita cadastrada ainda.'}
+            </ThemedText>
           }
           renderItem={({ item }) => {
             const precoVenda = calcularPrecoVendaReceita(item.id);
+            const tags = listarTags(item.tags);
 
             return (
               <Pressable onPress={() => router.push(`/receitas/${item.id}`)}>
@@ -80,6 +118,12 @@ export default function ReceitasScreen() {
                   <ThemedText type="small" themeColor="textSecondary">
                     Preço de venda sugerido: {formatarMoeda(precoVenda)} / {item.unidade_rendimento}
                   </ThemedText>
+
+                  {tags.length > 0 && (
+                    <ThemedText type="small" themeColor="accent">
+                      {tags.join(' · ')}
+                    </ThemedText>
+                  )}
                 </ThemedView>
               </Pressable>
             );
@@ -112,6 +156,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     lineHeight: 40,
+  },
+  filtrosRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.one,
+  },
+  filtroChip: {
+    borderWidth: 1,
+    borderRadius: Spacing.four,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
   },
   listContent: {
     gap: Spacing.two,

@@ -3,8 +3,8 @@ import { db } from "./db";
 
 export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): number {
   const resultado = db.runSync(
-    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem, anotacoes, fixada)
-     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem, $anotacoes, $fixada)`,
+    `INSERT INTO receitas (nome, rendimento, unidade_rendimento, margem_lucro, horas_producao, custo_embalagem, anotacoes, fixada, tags)
+     VALUES ($nome, $rendimento, $unidade_rendimento, $margem_lucro, $horas_producao, $custo_embalagem, $anotacoes, $fixada, $tags)`,
     {
       $nome: receita.nome,
       $rendimento: receita.rendimento,
@@ -14,6 +14,7 @@ export function inserirReceita(receita: Omit<Receita, "id" | "criado_em">): numb
       $custo_embalagem: receita.custo_embalagem,
       $anotacoes: receita.anotacoes,
       $fixada: receita.fixada,
+      $tags: receita.tags,
     }
   );
   return resultado.lastInsertRowId;
@@ -36,7 +37,7 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
     `UPDATE receitas
      SET nome = $nome, rendimento = $rendimento, unidade_rendimento = $unidade_rendimento,
          margem_lucro = $margem_lucro, horas_producao = $horas_producao, custo_embalagem = $custo_embalagem,
-         anotacoes = $anotacoes, fixada = $fixada
+         anotacoes = $anotacoes, fixada = $fixada, tags = $tags
      WHERE id = $id`,
     {
       $nome: receita.nome,
@@ -47,6 +48,7 @@ export function atualizarReceita(id: number, receita: Omit<Receita, "id" | "cria
       $custo_embalagem: receita.custo_embalagem,
       $anotacoes: receita.anotacoes,
       $fixada: receita.fixada,
+      $tags: receita.tags,
       $id: id,
     }
   );

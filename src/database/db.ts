@@ -45,6 +45,12 @@ function migrarAdicionarFixadaEmReceitas() {
   }
 }
 
+function migrarAdicionarTagsEmReceitas() {
+  if (!colunaExiste("receitas", "tags")) {
+    db.execSync("ALTER TABLE receitas ADD COLUMN tags TEXT NOT NULL DEFAULT '';");
+  }
+}
+
 function migrarAdicionarPerfilEmConfiguracoes() {
   if (!colunaExiste("configuracoes", "nome_usuario")) {
     db.execSync("ALTER TABLE configuracoes ADD COLUMN nome_usuario TEXT NOT NULL DEFAULT '';");
@@ -139,6 +145,7 @@ export function initDatabase() {
       custo_embalagem     REAL    NOT NULL DEFAULT 0,
       anotacoes           TEXT    NOT NULL DEFAULT '',
       fixada              INTEGER NOT NULL DEFAULT 0,
+      tags                TEXT    NOT NULL DEFAULT '',
       criado_em           TEXT    NOT NULL DEFAULT (datetime('now'))
     );
   `);
@@ -146,6 +153,7 @@ export function initDatabase() {
   migrarAdicionarHorasEmbalagemEmReceitas();
   migrarAdicionarAnotacoesEmReceitas();
   migrarAdicionarFixadaEmReceitas();
+  migrarAdicionarTagsEmReceitas();
 
   db.execSync(`
     CREATE TABLE IF NOT EXISTS ingredientes_receita (

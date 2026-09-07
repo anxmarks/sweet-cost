@@ -27,6 +27,7 @@ export interface Receita {
     custo_embalagem: number;
     anotacoes: string;
     fixada: number;
+    tags: string;
     criado_em: string;
 }
 
