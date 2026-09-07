@@ -50,4 +50,5 @@ export interface Configuracao {
   valor_hora_mao_de_obra: number;
   nome_usuario: string;
   atelie: string;
+  onboarding_visto: number;
 }

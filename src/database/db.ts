@@ -54,6 +54,12 @@ function migrarAdicionarPerfilEmConfiguracoes() {
   }
 }
 
+function migrarAdicionarOnboardingVistoEmConfiguracoes() {
+  if (!colunaExiste("configuracoes", "onboarding_visto")) {
+    db.execSync("ALTER TABLE configuracoes ADD COLUMN onboarding_visto INTEGER NOT NULL DEFAULT 0;");
+  }
+}
+
 // rótulos das antigas categorias fixas, usados só para migrar os nomes uma vez
 const ROTULOS_CATEGORIA_LEGADO: Record<string, string> = {
   aluguel: "Aluguel",
@@ -168,12 +174,14 @@ export function initDatabase() {
       receitas_estimadas_por_mes  REAL    NOT NULL DEFAULT 0,
       valor_hora_mao_de_obra      REAL    NOT NULL DEFAULT 0,
       nome_usuario                TEXT    NOT NULL DEFAULT '',
-      atelie                      TEXT    NOT NULL DEFAULT ''
+      atelie                      TEXT    NOT NULL DEFAULT '',
+      onboarding_visto            INTEGER NOT NULL DEFAULT 0
     );
   `);
 
   migrarAdicionarValorHoraEmConfiguracoes();
   migrarAdicionarPerfilEmConfiguracoes();
+  migrarAdicionarOnboardingVistoEmConfiguracoes();
 
   seedConfiguracoes();
 }

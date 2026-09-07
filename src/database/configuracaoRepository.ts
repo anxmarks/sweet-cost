@@ -23,3 +23,9 @@ export function atualizarPerfil(nome: string, atelie: string): void {
     $atelie: atelie,
   });
 }
+
+export function atualizarOnboardingVisto(visto: boolean): void {
+  db.runSync("UPDATE configuracoes SET onboarding_visto = $visto WHERE id = 1", {
+    $visto: visto ? 1 : 0,
+  });
+}

@@ -83,6 +83,12 @@ export default function InicioScreen() {
   useFocusEffect(
     useCallback(() => {
       const configuracao = buscarConfiguracao();
+
+      if (!configuracao.onboarding_visto) {
+        router.replace('/onboarding');
+        return;
+      }
+
       const produtos = listarProdutos();
       const receita = buscarReceitaMaisRecente();
 

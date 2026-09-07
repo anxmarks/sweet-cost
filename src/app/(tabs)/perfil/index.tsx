@@ -141,6 +141,12 @@ export default function PerfilScreen() {
               {fichasCount}
             </ThemedText>
           </View>
+
+          <Pressable onPress={() => router.push('/onboarding')}>
+            <View style={[styles.reverApresentacaoButton, { borderColor: theme.border }]}>
+              <ThemedText type="smallBold">Rever a apresentação</ThemedText>
+            </View>
+          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -209,5 +215,13 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     borderBottomWidth: 1,
     minHeight: 54,
+  },
+  reverApresentacaoButton: {
+    minHeight: 48,
+    marginTop: Spacing.four,
+    borderWidth: 1,
+    borderRadius: Spacing.one,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
