@@ -16,6 +16,7 @@ import {
   atualizarReceita,
   buscarReceitaPorId,
   contarReceitasFixadas,
+  duplicarReceita,
   excluirIngredienteReceita,
   excluirReceita,
   inserirIngredienteReceita,
@@ -88,6 +89,7 @@ export default function ReceitaDetalheScreen() {
   const [ingredientes, setIngredientes] = useState<IngredienteView[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pickerAberto, setPickerAberto] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
   const [editandoQuantidadeId, setEditandoQuantidadeId] = useState<number | null>(null);
   const [quantidadeRascunho, setQuantidadeRascunho] = useState('');
 
@@ -369,7 +371,16 @@ export default function ReceitaDetalheScreen() {
     persistir({ rendimento: novoRendimento, horas_producao: novasHoras });
   }
 
+  function handleDuplicar() {
+    setMenuAberto(false);
+    const novoId = duplicarReceita(receitaId);
+    if (novoId) {
+      router.navigate(`/receitas/${novoId}`);
+    }
+  }
+
   function handleExcluir() {
+    setMenuAberto(false);
     Alert.alert('Excluir receita', `Tem certeza que deseja excluir "${nome}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -409,11 +420,18 @@ export default function ReceitaDetalheScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.cabecalho}>
-          <Pressable onPress={() => router.navigate('/receitas')} hitSlop={8}>
-            <ThemedText type="link" themeColor="accent">
-              ← Receitas
-            </ThemedText>
-          </Pressable>
+          <View style={styles.topoRow}>
+            <Pressable onPress={() => router.navigate('/receitas')} hitSlop={8}>
+              <ThemedText type="link" themeColor="accent">
+                ← Receitas
+              </ThemedText>
+            </Pressable>
+            <Pressable onPress={() => setMenuAberto(true)} hitSlop={8}>
+              <ThemedText type="subtitle" themeColor="textSecondary" style={styles.engrenagem}>
+                ⚙
+              </ThemedText>
+            </Pressable>
+          </View>
 
           <View style={styles.tituloComFixarRow}>
             <View style={styles.flex1}>
@@ -675,13 +693,27 @@ export default function ReceitaDetalheScreen() {
             style={[styles.anotacoesInput, { color: theme.text, borderColor: theme.border }]}
           />
 
-          <Pressable onPress={handleExcluir} style={styles.excluirWrap}>
-            <ThemedText type="small" themeColor="danger">
-              Excluir receita
-            </ThemedText>
-          </Pressable>
         </ScrollView>
       </SafeAreaView>
+
+      <Modal visible={menuAberto} transparent animationType="fade" onRequestClose={() => setMenuAberto(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setMenuAberto(false)}>
+          <ThemedView style={styles.menuOpcoes}>
+            <Pressable onPress={handleDuplicar}>
+              <View style={styles.menuOpcao}>
+                <ThemedText type="small">Duplicar receita</ThemedText>
+              </View>
+            </Pressable>
+            <Pressable onPress={handleExcluir}>
+              <View style={styles.menuOpcao}>
+                <ThemedText type="small" themeColor="danger">
+                  Excluir receita
+                </ThemedText>
+              </View>
+            </Pressable>
+          </ThemedView>
+        </Pressable>
+      </Modal>
 
       <Modal visible={pickerAberto} transparent animationType="slide" onRequestClose={() => setPickerAberto(false)}>
         <View style={styles.pickerOverlay}>
@@ -764,6 +796,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.two,
     gap: Spacing.half,
+  },
+  topoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  engrenagem: {
+    fontSize: 20,
   },
   tituloComFixarRow: {
     flexDirection: 'row',
@@ -954,10 +994,22 @@ const styles = StyleSheet.create({
   custosFixosValor: {
     fontSize: 19,
   },
-  excluirWrap: {
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.five,
-    paddingVertical: Spacing.two,
+  },
+  menuOpcoes: {
+    minWidth: 200,
+    borderRadius: Spacing.three,
+    padding: Spacing.two,
+    gap: Spacing.half,
+  },
+  menuOpcao: {
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
   },
   pickerOverlay: {
     flex: 1,

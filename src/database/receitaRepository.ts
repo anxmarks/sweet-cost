@@ -71,6 +71,34 @@ export function excluirReceita(id: number): void {
   db.runSync("DELETE FROM receitas WHERE id = $id", { $id: id });
 }
 
+export function duplicarReceita(id: number): number | null {
+  const receita = buscarReceitaPorId(id);
+  if (!receita) return null;
+
+  const novoId = inserirReceita({
+    nome: `${receita.nome} (cópia)`,
+    rendimento: receita.rendimento,
+    unidade_rendimento: receita.unidade_rendimento,
+    margem_lucro: receita.margem_lucro,
+    horas_producao: receita.horas_producao,
+    custo_embalagem: receita.custo_embalagem,
+    anotacoes: receita.anotacoes,
+    fixada: 0,
+    tags: receita.tags,
+  });
+
+  for (const ingrediente of listarIngredientesPorReceita(id)) {
+    inserirIngredienteReceita({
+      receita_id: novoId,
+      produto_id: ingrediente.produto_id,
+      quantidade_usada: ingrediente.quantidade_usada,
+      unidade_usada: ingrediente.unidade_usada,
+    });
+  }
+
+  return novoId;
+}
+
 export function inserirIngredienteReceita(ingrediente: Omit<IngredienteReceita, "id">): number {
   const resultado = db.runSync(
     `INSERT INTO ingredientes_receita (receita_id, produto_id, quantidade_usada, unidade_usada)
