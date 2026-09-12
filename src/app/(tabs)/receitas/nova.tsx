@@ -11,7 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { listarProdutos } from '@/database/produtoRepository';
 import { inserirIngredienteReceita, inserirReceita } from '@/database/receitaRepository';
 import { Produto, Unidade } from '@/models';
-import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
+import { listarUnidadesCompativeis, TODAS_UNIDADES } from '@/utils/converterUnidade';
 
 type IngredienteForm = {
   produtoId: number;
@@ -26,7 +26,7 @@ export default function NovaReceitaScreen() {
 
   const [nome, setNome] = useState('');
   const [rendimento, setRendimento] = useState('');
-  const [unidadeRendimento, setUnidadeRendimento] = useState('un');
+  const [unidadeRendimento, setUnidadeRendimento] = useState<Unidade>('un');
   const [margemLucro, setMargemLucro] = useState('');
 
   const [ingredientes, setIngredientes] = useState<IngredienteForm[]>([]);
@@ -114,10 +114,6 @@ export default function NovaReceitaScreen() {
       setErro('Informe um rendimento válido.');
       return;
     }
-    if (!unidadeRendimento.trim()) {
-      setErro('Informe a unidade do rendimento.');
-      return;
-    }
     if (!margemLucro || Number.isNaN(margemNumero) || margemNumero < 0) {
       setErro('Informe uma margem de lucro válida.');
       return;
@@ -126,7 +122,7 @@ export default function NovaReceitaScreen() {
     const receitaId = inserirReceita({
       nome: nome.trim(),
       rendimento: rendimentoNumero,
-      unidade_rendimento: unidadeRendimento.trim(),
+      unidade_rendimento: unidadeRendimento,
       margem_lucro: margemNumero,
       horas_producao: 0.5,
       custo_embalagem: 0,
@@ -181,12 +177,10 @@ export default function NovaReceitaScreen() {
             </View>
             <View style={[styles.field, styles.flex1]}>
               <ThemedText type="smallBold">Unidade do rendimento *</ThemedText>
-              <TextInput
+              <SeletorUnidade
                 value={unidadeRendimento}
-                onChangeText={setUnidadeRendimento}
-                placeholder="un"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+                unidadesDisponiveis={TODAS_UNIDADES}
+                onSelecionar={setUnidadeRendimento}
               />
             </View>
           </View>

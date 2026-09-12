@@ -1,5 +1,19 @@
 import { Unidade } from "@/models";
 
+export const TODAS_UNIDADES: Unidade[] = ["g", "kg", "ml", "l", "un"];
+
+const ROTULOS_SINGULARES: Record<Unidade, string> = {
+  g: "grama",
+  kg: "quilo",
+  ml: "mililitro",
+  l: "litro",
+  un: "unidade",
+};
+
+export function rotuloUnidadeSingular(unidade: Unidade): string {
+  return ROTULOS_SINGULARES[unidade];
+}
+
 type Grupo = "massa" | "volume" | "contagem";
 
 const GRUPOS: Record<Unidade, Grupo> = {

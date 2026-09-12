@@ -21,7 +21,7 @@ export interface Receita {
     id: number;
     nome: string;
     rendimento: number;
-    unidade_rendimento: string;
+    unidade_rendimento: Unidade;
     margem_lucro: number;
     horas_producao: number;
     custo_embalagem: number;

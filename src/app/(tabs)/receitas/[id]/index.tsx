@@ -27,7 +27,7 @@ import { Produto, Receita, Unidade } from '@/models';
 import { calcularCustoIngrediente } from '@/services/calculoCusto';
 import { calcularCustoFixoRateado, calcularTotalCustosFixos } from '@/services/calculoCustoFixo';
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
-import { listarUnidadesCompativeis } from '@/utils/converterUnidade';
+import { listarUnidadesCompativeis, TODAS_UNIDADES } from '@/utils/converterUnidade';
 import { formatarMoeda } from '@/utils/formatarMoeda';
 import { listarTags } from '@/utils/listarTags';
 
@@ -76,7 +76,7 @@ export default function ReceitaDetalheScreen() {
 
   const [rendimento, setRendimento] = useState(0);
   const [rendimentoTexto, setRendimentoTexto] = useState('');
-  const [unidadeRendimento, setUnidadeRendimento] = useState('un');
+  const [unidadeRendimento, setUnidadeRendimento] = useState<Unidade>('un');
   const [margemLucro, setMargemLucro] = useState(0);
   const [horasProducao, setHorasProducao] = useState(0.5);
   const [custoEmbalagem, setCustoEmbalagem] = useState(0);
@@ -225,13 +225,9 @@ export default function ReceitaDetalheScreen() {
     persistir({ rendimento: numero });
   }
 
-  function confirmarUnidadeRendimento() {
-    const tratado = unidadeRendimento.trim();
-    if (!tratado) {
-      setUnidadeRendimento(unidadeRendimento);
-      return;
-    }
-    persistir({ unidade_rendimento: tratado });
+  function handleAlterarUnidadeRendimento(unidade: Unidade) {
+    setUnidadeRendimento(unidade);
+    persistir({ unidade_rendimento: unidade });
   }
 
   function confirmarEmbalagem() {
@@ -513,13 +509,10 @@ export default function ReceitaDetalheScreen() {
               <ThemedText type="small" themeColor="textSecondary">
                 Do quê
               </ThemedText>
-              <TextInput
+              <SeletorUnidade
                 value={unidadeRendimento}
-                onChangeText={setUnidadeRendimento}
-                onBlur={confirmarUnidadeRendimento}
-                placeholder="fatias"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.inputSublinhado, { color: theme.text, borderBottomColor: theme.border }]}
+                unidadesDisponiveis={TODAS_UNIDADES}
+                onSelecionar={handleAlterarUnidadeRendimento}
               />
             </View>
           </View>

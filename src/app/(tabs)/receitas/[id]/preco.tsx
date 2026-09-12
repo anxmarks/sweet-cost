@@ -13,7 +13,9 @@ import { listarProdutos } from '@/database/produtoRepository';
 import { calcularCustoIngrediente } from '@/services/calculoCusto';
 import { calcularCustoFixoRateado } from '@/services/calculoCustoFixo';
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
+import { rotuloUnidadeSingular } from '@/utils/converterUnidade';
 import { formatarMoeda } from '@/utils/formatarMoeda';
+import { Unidade } from '@/models';
 
 type Layout = 'ficha' | 'etiqueta' | 'recibo';
 
@@ -33,7 +35,7 @@ export default function PrecoReceitaScreen() {
 
   const [nome, setNome] = useState('');
   const [rendimento, setRendimento] = useState(1);
-  const [unidadeRendimento, setUnidadeRendimento] = useState('un');
+  const [unidadeRendimento, setUnidadeRendimento] = useState<Unidade>('un');
   const [margemLucro, setMargemLucro] = useState(0);
   const [horasProducao, setHorasProducao] = useState(0);
   const [custoEmbalagem, setCustoEmbalagem] = useState(0);
@@ -98,7 +100,7 @@ export default function PrecoReceitaScreen() {
   const precoExibido = precoTotal / divisor;
   const custoExibido = custoTotal / divisor;
   const lucroExibido = lucroTotal / divisor;
-  const unidadeSingular = unidadeRendimento.replace(/s$/, '');
+  const unidadeSingular = rotuloUnidadeSingular(unidadeRendimento);
   const unidadeLabel = porFatia ? `por ${unidadeSingular}` : 'a receita inteira';
   const rendimentoLabel = `${rendimento} ${unidadeRendimento}`;
   const horasLabel = String(horasProducao).replace('.', ',');
