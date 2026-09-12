@@ -1,4 +1,5 @@
-# Sweet Cost 🧁
+# Sweet Cost
+![header](assets/images/headermd.png)
 
 Aplicativo mobile para confeitarias calcularem o custo e o preço de venda de seus produtos — do ingrediente comprado até o preço final da receita, considerando insumos, mão de obra, embalagem e custos fixos do ateliê.
 
