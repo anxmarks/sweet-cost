@@ -62,6 +62,22 @@ export default function ReceitasScreen() {
           </Pressable>
         </View>
 
+        <Pressable onPress={() => router.push('/receitas/ranking')}>
+          <View style={[styles.rankingCard, { borderColor: theme.amber }]}>
+            <View style={styles.flex1}>
+              <ThemedText type="smallBold" themeColor="amberDeep">
+                Ranking de produtividade
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Veja o que mais rende por hora de trabalho
+              </ThemedText>
+            </View>
+            <ThemedText type="subtitle" themeColor="amberDeep">
+              →
+            </ThemedText>
+          </View>
+        </Pressable>
+
         {todasAsTags.length > 0 && (
           <View style={styles.filtrosRow}>
             {todasAsTags.map((tag) => {
@@ -156,6 +172,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     lineHeight: 40,
+  },
+  rankingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
   },
   filtrosRow: {
     flexDirection: 'row',

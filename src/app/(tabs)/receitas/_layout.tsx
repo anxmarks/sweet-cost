@@ -5,6 +5,7 @@ export default function ReceitasLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="nova" />
+      <Stack.Screen name="ranking" />
       <Stack.Screen name="[id]" />
     </Stack>
   );

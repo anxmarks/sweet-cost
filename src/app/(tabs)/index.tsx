@@ -16,6 +16,7 @@ import { calcularCustoTotalReceita } from '@/services/calculoCusto';
 import { calcularCustoFixoRateado } from '@/services/calculoCustoFixo';
 import { calcularCustoMaoDeObra } from '@/services/calculoMaoDeObra';
 import { calcularPrecoVenda } from '@/services/calculoMargem';
+import { listarReceitasPorProdutividade } from '@/services/calculoProdutividade';
 import { formatarMoeda } from '@/utils/formatarMoeda';
 
 type ReceitaRecente = {
@@ -31,6 +32,13 @@ type ReceitaFixada = {
   nome: string;
   rendimentoLabel: string;
   precoVenda: number;
+};
+
+type ReceitaMaisProdutiva = {
+  id: number;
+  nome: string;
+  horasProducaoLabel: string;
+  lucroPorHora: number;
 };
 
 function calcularResumoReceita(receita: Receita, configuracao: Configuracao, custoFixoRateado: number) {
@@ -76,6 +84,7 @@ export default function InicioScreen() {
   const [inicial, setInicial] = useState('?');
   const [receitaRecente, setReceitaRecente] = useState<ReceitaRecente | null>(null);
   const [receitasFixadas, setReceitasFixadas] = useState<ReceitaFixada[]>([]);
+  const [maisProdutiva, setMaisProdutiva] = useState<ReceitaMaisProdutiva | null>(null);
   const [insumosCount, setInsumosCount] = useState(0);
   const [custoFixoRateado, setCustoFixoRateado] = useState(0);
   const [avisoValidade, setAvisoValidade] = useState<string | null>(null);
@@ -120,6 +129,18 @@ export default function InicioScreen() {
           rendimentoLabel: `${r.rendimento} ${r.unidade_rendimento}`,
           precoVenda: calcularResumoReceita(r, configuracao, custoFixo).precoVenda,
         }))
+      );
+
+      const ranking = listarReceitasPorProdutividade();
+      setMaisProdutiva(
+        ranking.length > 0
+          ? {
+              id: ranking[0].id,
+              nome: ranking[0].nome,
+              horasProducaoLabel: String(ranking[0].horas_producao).replace('.', ','),
+              lucroPorHora: ranking[0].lucroPorHora,
+            }
+          : null
       );
     }, [])
   );
@@ -215,6 +236,32 @@ export default function InicioScreen() {
                 </Pressable>
               ))}
             </View>
+          )}
+
+          {maisProdutiva && (
+            <Pressable onPress={() => router.push('/receitas/ranking')}>
+              <View style={[styles.cardProdutividade, { borderColor: theme.amber }]}>
+                <ThemedText type="small" themeColor="accent" style={styles.rotuloUppercase}>
+                  Mais rende por hora
+                </ThemedText>
+                <View style={styles.cardCalculoLinha}>
+                  <View style={styles.flex1}>
+                    <ThemedText type="subtitle" style={styles.cardCalculoNome}>
+                      {maisProdutiva.nome}
+                    </ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {maisProdutiva.horasProducaoLabel}h de produção
+                    </ThemedText>
+                  </View>
+                  <ThemedText type="title" style={styles.cardCalculoPreco}>
+                    {formatarMoeda(maisProdutiva.lucroPorHora)}/h
+                  </ThemedText>
+                </View>
+                <ThemedText type="small" themeColor="amberDeep" style={styles.verRankingTexto}>
+                  Ver ranking completo →
+                </ThemedText>
+              </View>
+            </Pressable>
           )}
 
           <View style={styles.statsRow}>
@@ -352,6 +399,15 @@ const styles = StyleSheet.create({
   fixadaNome: {
     fontSize: 18,
     lineHeight: 22,
+  },
+  cardProdutividade: {
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+    gap: Spacing.one,
+  },
+  verRankingTexto: {
+    marginTop: Spacing.one,
   },
   statsRow: {
     flexDirection: 'row',
