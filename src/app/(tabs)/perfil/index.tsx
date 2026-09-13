@@ -142,6 +142,15 @@ export default function PerfilScreen() {
             </ThemedText>
           </View>
 
+          <Pressable onPress={() => router.push('/perfil/backup')}>
+            <View style={[styles.linha, { borderBottomColor: theme.border }]}>
+              <ThemedText type="small">Backup e exportação</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                →
+              </ThemedText>
+            </View>
+          </Pressable>
+
           <Pressable onPress={() => router.push('/onboarding')}>
             <View style={[styles.reverApresentacaoButton, { borderColor: theme.border }]}>
               <ThemedText type="smallBold">Rever a apresentação</ThemedText>
