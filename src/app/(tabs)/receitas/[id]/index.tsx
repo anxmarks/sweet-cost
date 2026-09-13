@@ -9,7 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { buscarConfiguracao } from '@/database/configuracaoRepository';
-import { listarProdutos } from '@/database/produtoRepository';
+import { inserirProduto, listarProdutos } from '@/database/produtoRepository';
 import {
   atualizarFixada,
   atualizarIngredienteReceita,
@@ -54,6 +54,14 @@ function formatarQuantidade(quantidade: number, unidade: Unidade): string {
   }
   const arredondado = Math.round(quantidade * 100) / 100;
   return String(arredondado).replace('.', ',');
+}
+
+function dataDeHoje(): string {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
 }
 
 function quantidadeInicial(unidade: Unidade): number {
@@ -412,6 +420,20 @@ export default function ReceitaDetalheScreen() {
 
   const produtosDisponiveis = [...produtos].sort((a, b) => a.nome.localeCompare(b.nome));
 
+  function handleTransformarEmProduto() {
+    setMenuAberto(false);
+    const novoProdutoId = inserirProduto({
+      nome,
+      marca: 'Receita própria',
+      valor_pago: Math.round(custoTotal * 100) / 100,
+      quantidade: rendimento,
+      unidade: unidadeRendimento,
+      data_compra: dataDeHoje(),
+      data_validade: null,
+    });
+    router.navigate(`/dispensa/${novoProdutoId}`);
+  }
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -692,6 +714,11 @@ export default function ReceitaDetalheScreen() {
       <Modal visible={menuAberto} transparent animationType="fade" onRequestClose={() => setMenuAberto(false)}>
         <Pressable style={styles.menuOverlay} onPress={() => setMenuAberto(false)}>
           <ThemedView style={styles.menuOpcoes}>
+            <Pressable onPress={handleTransformarEmProduto}>
+              <View style={styles.menuOpcao}>
+                <ThemedText type="small">Transformar em produto</ThemedText>
+              </View>
+            </Pressable>
             <Pressable onPress={handleDuplicar}>
               <View style={styles.menuOpcao}>
                 <ThemedText type="small">Duplicar receita</ThemedText>

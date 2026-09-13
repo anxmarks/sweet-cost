@@ -81,7 +81,7 @@ export default function EditarProdutoScreen() {
       data_validade: dataValidade || null,
     });
 
-    router.back();
+    router.navigate('/dispensa');
   }
 
   function handleExcluir() {
@@ -102,7 +102,7 @@ export default function EditarProdutoScreen() {
         style: 'destructive',
         onPress: () => {
           excluirProduto(produtoId);
-          router.back();
+          router.navigate('/dispensa');
         },
       },
     ]);
