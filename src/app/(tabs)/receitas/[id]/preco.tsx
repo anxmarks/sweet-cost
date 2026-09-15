@@ -1,7 +1,9 @@
-import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Sharing from 'expo-sharing';
+import ViewShot, { ViewShotRef } from 'react-native-view-shot';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -45,6 +47,8 @@ export default function PrecoReceitaScreen() {
 
   const [layout, setLayout] = useState<Layout>('ficha');
   const [porFatia, setPorFatia] = useState(true);
+  const [compartilhando, setCompartilhando] = useState(false);
+  const viewShotRef = useRef<ViewShotRef>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,6 +120,29 @@ export default function PrecoReceitaScreen() {
     ? `Cada ${unidadeSingular} precisa sair por ${formatarMoeda(precoExibido)} para a receita fechar em ${formatarMoeda(precoTotal)}.`
     : `Se cobrar menos de ${formatarMoeda(custoTotal)} você paga para trabalhar.`;
 
+  async function handleCompartilhar() {
+    setCompartilhando(true);
+    try {
+      const uri = await viewShotRef.current?.capture();
+      if (!uri) return;
+
+      const disponivel = await Sharing.isAvailableAsync();
+      if (!disponivel) {
+        Alert.alert('Não disponível', 'Compartilhamento não está disponível neste dispositivo.');
+        return;
+      }
+
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle: `Preço de ${nome}`,
+      });
+    } catch {
+      Alert.alert('Erro ao compartilhar', 'Não foi possível gerar a imagem do preço.');
+    } finally {
+      setCompartilhando(false);
+    }
+  }
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -143,6 +170,10 @@ export default function PrecoReceitaScreen() {
         <ScrollView contentContainerStyle={styles.conteudo}>
           <Segmentado opcoes={LAYOUTS} valor={layout} onSelecionar={setLayout} preencher />
 
+          <ViewShot
+            ref={viewShotRef}
+            options={{ format: 'png', quality: 1 }}
+            style={[styles.viewShotWrapper, { backgroundColor: theme.background }]}>
           {layout === 'ficha' && (
             <View style={styles.fichaBox}>
               <ThemedText type="small" themeColor="accent" style={styles.rotuloUppercase}>
@@ -262,6 +293,13 @@ export default function PrecoReceitaScreen() {
               </View>
             </View>
           )}
+          </ViewShot>
+
+          <Pressable onPress={handleCompartilhar} disabled={compartilhando}>
+            <View style={[styles.botaoPrimario, { borderColor: theme.accent }]}>
+              <ThemedText type="smallBold">{compartilhando ? 'Gerando...' : 'Compartilhar preço'}</ThemedText>
+            </View>
+          </Pressable>
 
           <Pressable onPress={() => router.navigate(`/receitas/${receitaId}`)}>
             <View style={[styles.botaoContorno, { borderColor: theme.border }]}>
@@ -476,13 +514,24 @@ const styles = StyleSheet.create({
     fontSize: 32,
     lineHeight: 36,
   },
-  botaoContorno: {
+  viewShotWrapper: {
+    paddingBottom: Spacing.one,
+  },
+  botaoPrimario: {
     minHeight: 48,
     borderWidth: 1,
     borderRadius: Spacing.one,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: Spacing.five,
+  },
+  botaoContorno: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: Spacing.one,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.three,
   },
   notaFinal: {
     fontStyle: 'italic',
