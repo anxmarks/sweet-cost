@@ -19,12 +19,13 @@ import { rotuloUnidadeSingular } from '@/utils/converterUnidade';
 import { formatarMoeda } from '@/utils/formatarMoeda';
 import { Unidade } from '@/models';
 
-type Layout = 'ficha' | 'etiqueta' | 'recibo';
+type Layout = 'ficha' | 'etiqueta' | 'recibo' | 'grafico';
 
 const LAYOUTS: { valor: Layout; rotulo: string }[] = [
   { valor: 'ficha', rotulo: 'Ficha' },
   { valor: 'etiqueta', rotulo: 'Etiqueta' },
   { valor: 'recibo', rotulo: 'Recibo' },
+  { valor: 'grafico', rotulo: 'Gráfico' },
 ];
 
 export default function PrecoReceitaScreen() {
@@ -115,6 +116,16 @@ export default function PrecoReceitaScreen() {
     { rotulo: 'Custos fixos rateados', valor: formatarMoeda(custoFixoRateado / divisor) },
     { rotulo: 'Embalagem', valor: formatarMoeda(custoEmbalagem / divisor) },
   ];
+
+  const fatias = [
+    { rotulo: 'Insumos', valor: custoIngredientes / divisor, cor: theme.accent },
+    { rotulo: 'Mão de obra', valor: custoMaoDeObra / divisor, cor: theme.text },
+    { rotulo: 'Outros custos', valor: (custoFixoRateado + custoEmbalagem) / divisor, cor: theme.avatar },
+    { rotulo: 'Lucro', valor: lucroExibido, cor: theme.amber },
+  ].map((fatia) => ({
+    ...fatia,
+    percentual: precoExibido > 0 ? Math.round((fatia.valor / precoExibido) * 100) : 0,
+  }));
 
   const notaFinal = porFatia
     ? `Cada ${unidadeSingular} precisa sair por ${formatarMoeda(precoExibido)} para a receita fechar em ${formatarMoeda(precoTotal)}.`
@@ -290,6 +301,43 @@ export default function PrecoReceitaScreen() {
                 <ThemedText type="subtitle" style={styles.reciboVenderPorValor}>
                   {formatarMoeda(precoExibido)}
                 </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {layout === 'grafico' && (
+            <View style={styles.graficoBox}>
+              <ThemedText type="small" themeColor="accent" style={[styles.rotuloUppercase, styles.centralizado]}>
+                {nome.toUpperCase()}
+              </ThemedText>
+              <ThemedText
+                type="small"
+                themeColor="textSecondary"
+                style={[styles.centralizado, styles.graficoSubtitulo]}>
+                De onde vem o preço de {formatarMoeda(precoExibido)}
+              </ThemedText>
+
+              <View style={[styles.barraContainer, { borderColor: theme.border }]}>
+                {fatias.map((fatia) => (
+                  <View
+                    key={fatia.rotulo}
+                    style={{ flex: Math.max(fatia.valor, 0.01), backgroundColor: fatia.cor }}
+                  />
+                ))}
+              </View>
+
+              <View style={styles.legenda}>
+                {fatias.map((fatia) => (
+                  <View key={fatia.rotulo} style={styles.legendaLinha}>
+                    <View style={[styles.legendaCor, { backgroundColor: fatia.cor }]} />
+                    <ThemedText type="small" style={styles.flex1}>
+                      {fatia.rotulo}
+                    </ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {fatia.percentual}% · {formatarMoeda(fatia.valor)}
+                    </ThemedText>
+                  </View>
+                ))}
               </View>
             </View>
           )}
@@ -516,6 +564,39 @@ const styles = StyleSheet.create({
   },
   viewShotWrapper: {
     paddingBottom: Spacing.one,
+  },
+  graficoBox: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(75,52,44,0.2)',
+    paddingTop: Spacing.three,
+  },
+  graficoSubtitulo: {
+    marginTop: Spacing.one,
+    marginBottom: Spacing.four,
+  },
+  barraContainer: {
+    flexDirection: 'row',
+    height: 28,
+    borderWidth: 1,
+    borderRadius: Spacing.one,
+    overflow: 'hidden',
+  },
+  legenda: {
+    marginTop: Spacing.four,
+    gap: Spacing.two,
+  },
+  legendaLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  legendaCor: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+  },
+  flex1: {
+    flex: 1,
   },
   botaoPrimario: {
     minHeight: 48,
